@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import { useStore } from '../store'
+import { useStore, type LocalTask } from '../store'
+import { localAsTask } from '../tasks'
 import { useVault } from '../vault'
 import type { Course, SemesterCalendar } from '../types'
-import { classOccurrences, minutes, resolveDue, todayISO } from './dates'
+import { classOccurrences, resolveDue, todayISO } from './dates'
 import type { ObsidianTask } from './obsidian'
 import { schedule, type Busy, type Suggestion } from './scheduler'
-import { mix } from './themes'
+import { matchCourse, NEUTRAL } from './courseMatch'
 import { isLeaf } from './validate'
 
 export type EventKind = 'class' | 'deadline' | 'obsidian' | 'suggestion' | 'banner'
@@ -26,17 +27,12 @@ export interface CalEvent {
   done?: boolean
 }
 
-/** Day Planner 的时间线渐变：07:00 = #006466 → 24:00 = #4d194d */
-export const plannerColor = (start: string) => {
-  const t = Math.min(1, Math.max(0, (minutes(start) - 7 * 60) / (17 * 60)))
-  return mix('#006466', '#4d194d', t)
-}
-
 export function buildEvents(
   cal: SemesterCalendar,
   courses: Course[],
   dates: string[],
   days: Record<string, { tasks: ObsidianTask[] }>,
+  localTasks: LocalTask[],
   suggestions: Suggestion[],
   layers: { classes: boolean; deadlines: boolean; obsidian: boolean; suggestions: boolean },
 ): CalEvent[] {
@@ -77,10 +73,13 @@ export function buildEvents(
 
   if (layers.obsidian) {
     for (const d of dates) {
-      for (const t of days[d]?.tasks ?? []) {
+      const local = localTasks.filter((l) => l.date === d).map(localAsTask)
+      for (const t of [...(days[d]?.tasks ?? []), ...local]) {
+        // 待办按文字里提到的课程着色，认不出的用中性色
+        const course = matchCourse(t.text, courses)
         out.push({
-          id: `obs:${d}:${t.line}:${t.raw}`, kind: 'obsidian', date: d, start: t.start, end: t.end,
-          title: t.text, color: t.start ? plannerColor(t.start) : '#006466', task: t, done: t.status !== ' ',
+          id: t.localId ? `obs:local:${t.localId}` : `obs:${d}:${t.line}:${t.raw}`, kind: 'obsidian', date: d, start: t.start, end: t.end,
+          title: t.text, color: course?.color ?? NEUTRAL, course, task: t, done: t.status !== ' ',
         })
       }
     }
@@ -98,13 +97,14 @@ export function buildEvents(
 
 /** 全学期排程建议；Obsidian 已有的时间块（已加载的日期）视为忙碌 */
 export function useSuggestions() {
-  const { calendar, courses, rules, adopted, dismissed } = useStore()
+  const { calendar, courses, rules, adopted, dismissed, localTasks } = useStore()
   const days = useVault((s) => s.days)
   return useMemo(() => {
     const anyOn = rules.preview.on || rules.review.on || rules.assignment.on || rules.group.on || rules.exam.on || rules.inclass.on
     if (!anyOn) return { suggestions: [], unplaced: [] }
     const busy: Busy[] = []
     for (const d of Object.values(days)) for (const t of d.tasks) if (t.start && t.end) busy.push({ date: t.date, start: t.start, end: t.end })
+    for (const t of localTasks) if (t.start && t.end) busy.push({ date: t.date, start: t.start, end: t.end })
     return schedule(calendar, courses, rules, busy, todayISO(), new Set([...adopted, ...dismissed]))
-  }, [calendar, courses, rules, adopted, dismissed, days])
+  }, [calendar, courses, rules, adopted, dismissed, days, localTasks])
 }

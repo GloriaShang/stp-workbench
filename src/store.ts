@@ -11,6 +11,16 @@ export type ThemeMode = 'system' | 'light' | 'dark'
 export type CalView = 'day' | '3day' | 'week' | 'month'
 export type Page = 'dashboard' | 'calendar' | 'courses' | 'export' | 'rules' | 'settings'
 
+/** 没连 Obsidian 时，在日历里新建的待办先存在这里；连上后自动搬进 Daily Matter */
+export interface LocalTask {
+  id: string
+  date: string
+  start?: string
+  end?: string
+  text: string
+  done: boolean
+}
+
 export interface Layers {
   classes: boolean
   deadlines: boolean
@@ -27,6 +37,7 @@ interface State {
   /** 已写入 Obsidian 的建议 id，或被忽略的建议 id；排程时跳过 */
   adopted: string[]
   dismissed: string[]
+  localTasks: LocalTask[]
   themeMode: ThemeMode
   view: CalView
   layers: Layers
@@ -44,6 +55,9 @@ interface State {
   markAdopted: (ids: string[]) => void
   dismiss: (id: string) => void
   restoreDismissed: () => void
+  addLocalTasks: (items: Omit<LocalTask, 'id' | 'done'>[]) => void
+  updateLocalTask: (id: string, patch: Partial<LocalTask>) => void
+  removeLocalTasks: (ids: string[]) => void
   set: (p: Partial<Pick<State, 'themeMode' | 'view' | 'layers' | 'activeCourse'>>) => void
   resetCourses: () => void
   importBackup: (json: string) => void
@@ -59,6 +73,7 @@ export const useStore = create<State>()(
       obsidian: DEFAULT_OBSIDIAN,
       adopted: [],
       dismissed: [],
+      localTasks: [],
       themeMode: 'system',
       view: 'week',
       layers: { classes: true, deadlines: true, obsidian: true, suggestions: true },
@@ -85,6 +100,12 @@ export const useStore = create<State>()(
       markAdopted: (ids) => set((s) => ({ adopted: [...new Set([...s.adopted, ...ids])] })),
       dismiss: (id) => set((s) => ({ dismissed: [...new Set([...s.dismissed, id])] })),
       restoreDismissed: () => set({ dismissed: [] }),
+      addLocalTasks: (items) =>
+        set((s) => ({
+          localTasks: [...s.localTasks, ...items.map((t) => ({ ...t, id: `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`, done: false }))],
+        })),
+      updateLocalTask: (id, patch) => set((s) => ({ localTasks: s.localTasks.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
+      removeLocalTasks: (ids) => set((s) => ({ localTasks: s.localTasks.filter((t) => !ids.includes(t.id)) })),
       set: (p) => set(p),
       resetCourses: () => set({ courses: SEED_COURSES, activeCourse: SEED_COURSES[0].code }),
       importBackup: (json) => {
@@ -97,6 +118,7 @@ export const useStore = create<State>()(
           obsidian: { ...DEFAULT_OBSIDIAN, ...d.obsidian },
           adopted: d.adopted ?? [],
           dismissed: d.dismissed ?? [],
+          localTasks: d.localTasks ?? [],
         })
       },
     }),
@@ -150,7 +172,7 @@ function migrateV2(courses: Course[]): Course[] {
 export const backupJSON = () => {
   const s = useStore.getState()
   return JSON.stringify(
-    { version: 2, savedAt: Date.now(), exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed },
+    { version: 2, savedAt: Date.now(), exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed, localTasks: s.localTasks },
     null,
     2,
   )

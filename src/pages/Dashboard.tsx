@@ -1,7 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import { Badge, Card, COURSE_DOT, Empty } from '../components/ui'
 import { classOccurrences, diffDays, resolveDue, shortDate, teachingWeekOf, todayISO, WEEKDAY_ZH, weekdayOf, weekRangeLabel } from '../lib/dates'
-import { plannerColor, useSuggestions } from '../lib/events'
+import { useSuggestions } from '../lib/events'
+import { matchCourse, NEUTRAL } from '../lib/courseMatch'
+import type { ObsidianTask } from '../lib/obsidian'
+import { localAsTask, toggleTask } from '../tasks'
 import { STATUS_LABEL, TYPE_LABEL } from '../lib/i18n'
 import { courseIssues, globalIssues, isLeaf, weeklyLoad } from '../lib/validate'
 import { useStore } from '../store'
@@ -9,7 +12,7 @@ import { useVault } from '../vault'
 import type { AssessmentStatus } from '../types'
 
 export default function Dashboard() {
-  const { calendar, courses, setAssessment, setPage, set } = useStore()
+  const { calendar, courses, setAssessment, setPage, set, localTasks } = useStore()
   const vault = useVault()
   const { suggestions } = useSuggestions()
   const today = todayISO()
@@ -22,20 +25,21 @@ export default function Dashboard() {
 
   // 今天：上课 + Obsidian 待办 + 建议，按时间合并
   const todayItems = useMemo(() => {
-    const items: { time: string; end?: string; label: string; sub?: string; color: string; kind: string; done?: boolean }[] = []
+    const items: { time: string; end?: string; label: string; sub?: string; color: string; kind: string; done?: boolean; task?: ObsidianTask }[] = []
     for (const c of courses) {
       for (const o of classOccurrences(calendar, c).filter((o) => o.date === today)) {
         items.push({ time: o.start, end: o.end, label: `${c.short} 上课`, sub: o.room, color: c.color, kind: '上课' })
       }
     }
-    for (const t of vault.days[today]?.tasks ?? []) {
-      items.push({ time: t.start ?? '', end: t.end, label: t.text, color: t.start ? plannerColor(t.start) : '#006466', kind: 'Obsidian', done: t.status !== ' ' })
+    const local = localTasks.filter((t) => t.date === today).map(localAsTask)
+    for (const t of [...(vault.days[today]?.tasks ?? []), ...local]) {
+      items.push({ time: t.start ?? '', end: t.end, label: t.text, color: matchCourse(t.text, courses)?.color ?? NEUTRAL, kind: t.localId ? '待办' : 'Obsidian', done: t.status !== ' ', task: t })
     }
     for (const s of suggestions.filter((s) => s.date === today)) {
       items.push({ time: s.start, end: s.end, label: s.title, color: courses.find((c) => c.code === s.course)?.color ?? '#888', kind: '建议' })
     }
     return items.sort((a, b) => (a.time || '99').localeCompare(b.time || '99'))
-  }, [courses, calendar, today, vault.days, suggestions])
+  }, [courses, calendar, today, vault.days, localTasks, suggestions])
 
   const upcoming = useMemo(
     () =>
@@ -72,7 +76,11 @@ export default function Dashboard() {
               {todayItems.map((it, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <span className="w-24 shrink-0 whitespace-nowrap text-muted tabular-nums">{it.time ? `${it.time}${it.end ? '–' + it.end : ''}` : '未排时间'}</span>
-                  <span className="mt-1.5 inline-block h-2.5 w-1 shrink-0 rounded" style={{ background: it.color }} />
+                  {it.task ? (
+                    <input type="checkbox" className="mt-1 size-3.5 shrink-0" style={{ accentColor: it.color }} checked={!!it.done} onChange={() => toggleTask(it.task!)} />
+                  ) : (
+                    <span className="mt-1.5 inline-block h-2.5 w-1 shrink-0 rounded" style={{ background: it.color }} />
+                  )}
                   <span className={`min-w-0 flex-1 truncate ${it.done ? 'text-muted line-through' : ''}`} title={it.label}>
                     {it.label}
                     {it.sub && <span className="ml-2 text-xs text-muted">{it.sub}</span>}

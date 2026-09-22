@@ -12,6 +12,7 @@ import {
   readDay,
   updateTask,
   type DayFile,
+  type NewTask,
   type ObsidianTask,
 } from './lib/obsidian'
 import { readBackup, writeBackup } from './lib/backup'
@@ -28,6 +29,8 @@ interface VaultState {
   status: VaultStatus
   days: Record<string, DayFile>
   error?: string
+  /** 普通提示（非错误），日历底部弹出 */
+  notice?: string
   busy: boolean
   lastBackupAt?: number
   backup: () => Promise<void>
@@ -40,7 +43,7 @@ interface VaultState {
   update: (t: ObsidianTask, patch: Partial<Pick<ObsidianTask, 'start' | 'end' | 'text' | 'status'>>) => Promise<void>
   move: (t: ObsidianTask, date: string, start: string, end: string) => Promise<void>
   remove: (t: ObsidianTask) => Promise<void>
-  add: (date: string, items: { start: string; end: string; text: string }[]) => Promise<void>
+  add: (date: string, items: NewTask[]) => Promise<void>
   clearError: () => void
 }
 
@@ -51,6 +54,24 @@ export const useVault = create<VaultState>((set, get) => {
     const ok = await checkDailyDir(h, cfg())
     set({ handle: h, status: ok ? 'ready' : 'no-daily-dir', days: {} })
     await syncBackup(h)
+    if (ok) await flushLocalTasks(h)
+  }
+
+  /** 没连 vault 时建的待办，连上后搬进对应日期的 Daily Matter */
+  async function flushLocalTasks(h: FileSystemDirectoryHandle) {
+    const local = useStore.getState().localTasks
+    if (!local.length) return
+    try {
+      const byDate = new Map<string, typeof local>()
+      local.forEach((t) => byDate.set(t.date, [...(byDate.get(t.date) ?? []), t]))
+      for (const [date, list] of byDate) {
+        await addTasks(h, cfg(), date, list.map((t) => ({ status: t.done ? 'x' : ' ', start: t.start, end: t.end, text: t.text })))
+      }
+      useStore.getState().removeLocalTasks(local.map((t) => t.id))
+      set({ notice: `已把工作台里的 ${local.length} 条待办写进 Obsidian Daily Matter` })
+    } catch (e) {
+      set({ error: `搬运本地待办失败：${e instanceof Error ? e.message : String(e)}` })
+    }
   }
 
   /**
@@ -141,7 +162,7 @@ export const useVault = create<VaultState>((set, get) => {
     move: (t, date, start, end) => op([t.date, date], (h) => moveTask(h, cfg(), t, date, start, end)),
     remove: (t) => op([t.date], (h) => deleteTask(h, cfg(), t)),
     add: (date, items) => op([date], (h) => addTasks(h, cfg(), date, items)),
-    clearError: () => set({ error: undefined }),
+    clearError: () => set({ error: undefined, notice: undefined }),
     backup: async () => {
       const h = get().handle
       if (!h || get().status !== 'ready') return
@@ -154,7 +175,7 @@ export const useVault = create<VaultState>((set, get) => {
 // 课程、设置等需要持久化的数据一变，就记下时间并排一次备份
 let timer: ReturnType<typeof setTimeout> | undefined
 useStore.subscribe((s, prev) => {
-  const keys = ['courses', 'exportPrefs', 'rules', 'obsidian', 'adopted', 'dismissed'] as const
+  const keys = ['courses', 'exportPrefs', 'rules', 'obsidian', 'adopted', 'dismissed', 'localTasks'] as const
   if (keys.every((k) => s[k] === prev[k])) return
   localStorage.setItem(LOCAL_MODIFIED, String(Date.now()))
   clearTimeout(timer)

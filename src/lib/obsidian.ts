@@ -34,6 +34,8 @@ export interface ObsidianTask {
   start?: string
   end?: string
   text: string
+  /** 没连 Obsidian 时存在工作台里的待办 */
+  localId?: string
 }
 
 export interface DayFile {
@@ -191,11 +193,9 @@ export async function moveTask(
 }
 
 /** 纯函数：把任务按时间顺序插入 `# Day planner` 段落；没有这个标题就在文末新建。 */
-export function insertTasks(
-  content: string,
-  cfg: ObsidianConfig,
-  items: { status?: string; start: string; end: string; text: string }[],
-): string {
+export type NewTask = { status?: string; start?: string; end?: string; text: string }
+
+export function insertTasks(content: string, cfg: ObsidianConfig, items: NewTask[]): string {
   const lines = content.length ? content.split('\n') : []
   if (lines.length && lines[lines.length - 1] === '') lines.pop()
   const heading = `${'#'.repeat(cfg.headingLevel)} ${cfg.plannerHeading}`
@@ -215,7 +215,8 @@ export function insertTasks(
     }
     return lines.length
   }
-  for (const it of [...items].sort((x, y) => x.start.localeCompare(y.start))) {
+  // 有时间的按时间插入；没有时间的放在段落末尾
+  for (const it of [...items].sort((x, y) => (x.start ?? '99').localeCompare(y.start ?? '99'))) {
     const end = sectionEnd()
     let pos = -1
     let lastTask = -1
@@ -223,7 +224,7 @@ export function insertTasks(
       const m = TASK_RE.exec(lines[i])
       if (!m || m[1]) continue
       lastTask = i
-      if (pos < 0 && m[3] && norm(m[3]) > it.start) pos = i
+      if (pos < 0 && it.start && m[3] && norm(m[3]) > it.start) pos = i
     }
     if (pos < 0) pos = lastTask >= 0 ? lastTask + 1 : h + 2
     lines.splice(pos, 0, formatTask({ status: it.status ?? ' ', start: it.start, end: it.end, text: it.text }))
@@ -236,7 +237,7 @@ export async function addTasks(
   vault: FileSystemDirectoryHandle,
   cfg: ObsidianConfig,
   date: string,
-  items: { status?: string; start: string; end: string; text: string }[],
+  items: NewTask[],
 ) {
   if (!items.length) return
   const { content } = await readDay(vault, cfg, date)
