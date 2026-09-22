@@ -248,7 +248,6 @@ function AssessmentTable({ c, lang }: { c: Course; lang: EditLang }) {
                 <td className="py-1" style={{ paddingLeft: depth * 20 }}>
                   <LInput v={a.name} lang={lang} onChange={(v) => up(a, { name: v })} className={`cell-input ${depth === 0 ? 'font-bold' : ''}`} />
                   {leaf && <LInput v={a.requirements} lang={lang} multiline onChange={(v) => up(a, { requirements: v })} className="cell-input text-xs text-muted" />}
-                  {a.conflict && <div className="px-1 text-xs text-danger">⚠ {a.conflict[lang] || a.conflict.en}</div>}
                 </td>
                 <td>
                   <select className="cell-input" value={a.type} onChange={(e) => up(a, { type: e.target.value as AssessmentType })}>

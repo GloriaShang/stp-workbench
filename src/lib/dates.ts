@@ -76,8 +76,7 @@ export interface ResolvedDue {
 /**
  * 截止日期推算：
  *  - 有明确日期 → 直接用
- *  - 课内完成 → 该周这门课的第一次课
- *  - 只写了周次 → 该周这门课的最后一次课；阅读周等无课的周取该周周五
+ *  - 只写了周次（含课内完成）→ 宁可提前：取该周这门课最早的一次课；阅读周等无课的周取该周周一
  */
 export function resolveDue(cal: SemesterCalendar, course: Course, a: Assessment): ResolvedDue {
   if (a.tba) return { confidence: 'tba' }
@@ -87,12 +86,12 @@ export function resolveDue(cal: SemesterCalendar, course: Course, a: Assessment)
   if (!a.dueWeek) return { confidence: 'none' }
   const occ = classOccurrences(cal, course).filter((o) => o.week === a.dueWeek)
   if (occ.length) {
-    const o = a.inClass ? occ[0] : occ[occ.length - 1]
-    return { date: o.date, time: a.inClass ? o.start : undefined, week: a.dueWeek, confidence: 'inferred' }
+    const o = occ[0]
+    return { date: o.date, time: o.start, week: a.dueWeek, confidence: 'inferred' }
   }
   const w = cal.weeks.find((x) => x.week === a.dueWeek)
   if (!w) return { week: a.dueWeek, confidence: 'none' }
-  return { date: addDays(w.start, 5), week: a.dueWeek, confidence: 'inferred' }
+  return { date: addDays(w.start, 1), week: a.dueWeek, confidence: 'inferred' }
 }
 
 /** 某个教学周在日历上的显示范围，如 "9/20–9/26" */

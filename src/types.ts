@@ -55,8 +55,6 @@ export interface Assessment {
   requirements?: L
   aiPolicy?: L
   latePolicy?: L
-  /** STP 内部矛盾或与校历不一致 */
-  conflict?: L
   tba?: boolean
   status: AssessmentStatus
 }

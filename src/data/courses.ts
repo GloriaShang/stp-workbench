@@ -54,11 +54,10 @@ const FIN3073: Course = {
     }),
     w(5, l('Introduction to Derivatives and Their Valuation', '衍生品及其定价导论'), {
       activity: l('Forward contract; futures contract; options; hedging, arbitrage and speculation', '远期、期货与期权；套期保值、套利与投机'),
-      events: l('Assignment 1 due', '作业 1 截止'),
+      events: l('Assignment 1 due / Assignment 2 posted', '作业 1 截止／发布作业 2'),
     }),
     w(6, l('Introduction to Derivatives and Their Valuation (cont.)', '衍生品及其定价导论（续）'), {
       activity: l('Valuation of forwards and futures contracts', '远期与期货合约的定价'),
-      events: l('Assignment 2 posted', '发布作业 2'),
     }),
     w(7, l('Discrete Version of Brownian Motion – Binomial Trees I', '布朗运动的离散形式：二叉树（一）'), {
       activity: l('Probability models in finance; one-step tree model of option; no-arbitrage condition', '金融中的概率模型；期权的单步二叉树；无套利条件'),
@@ -66,13 +65,13 @@ const FIN3073: Course = {
     reading(8, l('Assignment 2 due', '作业 2 截止')),
     w(9, l('Discrete Version of Brownian Motion – Binomial Trees II', '布朗运动的离散形式：二叉树（二）'), {
       activity: l('Risk-neutral valuation; two-step binomial trees; American vs. European options', '风险中性定价；两步二叉树；美式与欧式期权'),
+      events: l('Assignment 3 posted', '发布作业 3'),
     }),
     w(10, l("Wiener Process & Ito's Lemma", '维纳过程与伊藤引理'), {
       activity: l('The Markov property; the Wiener process; generalized Wiener process; Ito process', '马尔可夫性；维纳过程；广义维纳过程；伊藤过程'),
     }),
     w(11, l("Wiener Process & Ito's Lemma; The Black-Scholes-Merton Model", '维纳过程与伊藤引理；Black-Scholes-Merton 模型'), {
       activity: l('Lognormal distribution', '对数正态分布'),
-      events: l('Assignment 3 posted', '发布作业 3'),
     }),
     w(12, l('The Black-Scholes-Merton Model', 'Black-Scholes-Merton 模型'), {
       activity: l('BSM differential equation; BSM formula and its proof; applications with approximations', 'BSM 微分方程；BSM 公式及其证明；应用与近似'),
@@ -89,13 +88,13 @@ const FIN3073: Course = {
     }),
     a({
       id: 'fin-a2', parentId: 'fin-as', name: l('Assignment 2', '作业 2'), type: 'Individual', weight: 15,
+      // STP 周表写 W6、Remarks 写 W5，按"宁可提前"取 W5
       releaseWeek: 5, dueWeek: 8,
-      conflict: l('Release week: the weekly table says Week 6, the Remarks say Week 5.', '发布周矛盾：周计划表写第 6 周，Remarks 写第 5 周。'),
     }),
     a({
       id: 'fin-a3', parentId: 'fin-as', name: l('Assignment 3', '作业 3'), type: 'Individual', weight: 20,
+      // STP 周表写 W11、Remarks 写 W9，按"宁可提前"取 W9
       releaseWeek: 9, dueWeek: 14,
-      conflict: l('Release week: the weekly table says Week 11, the Remarks say Week 9.', '发布周矛盾：周计划表写第 11 周，Remarks 写第 9 周。'),
     }),
     a({ id: 'fin-fe', name: l('Final Examination (3 hours)', '期末考试（3 小时）'), type: 'FinalExam', weight: 40 }),
   ],
@@ -480,9 +479,11 @@ const GCAP3213: Course = {
     w(10, l('Organic vs. Mechanistic Structure for Leadership', '有机式与机械式领导结构'), { chapters: 'Ch 9', activity: l('Entrepreneurial developments in the service industry', '服务业的创业发展'), homework: PREP_IA2 }),
     w(11, l('Microenterprises and Service Leadership', '微型企业与服务型领导'), {
       chapters: 'Ch 10', activity: l('How to develop organic leadership in an organization', '如何在组织中培养有机式领导'),
-      events: l('Individual assignment II due 17:00, Fri 27 Nov (listed in Week 11)', '个人作业 II 11/27（周五）17:00 截止（STP 写在第 11 周）'),
     }),
-    w(12, l('Service Leadership in Times of Crisis', '危机中的服务型领导'), { chapters: 'Ch 11', activity: l('Microenterprises in the service sector', '服务业中的微型企业'), homework: l('Prepare group project', '准备小组项目') }),
+    w(12, l('Service Leadership in Times of Crisis', '危机中的服务型领导'), {
+      chapters: 'Ch 11', activity: l('Microenterprises in the service sector', '服务业中的微型企业'), homework: l('Prepare group project', '准备小组项目'),
+      events: l('Individual assignment II due 17:00, Fri 27 Nov', '个人作业 II 11/27（周五）17:00 截止'),
+    }),
     w(13, l('Group Project Presentation', '小组项目展示'), {
       activity: l("Educating students for service leadership to deal with life's crises", '培养学生以服务型领导应对人生危机'),
       events: l('Full report and PPT due 17:00, Fri 4 Dec', '完整报告与 PPT 12/4（周五）17:00 截止'),
@@ -499,10 +500,10 @@ const GCAP3213: Course = {
     }),
     a({
       id: 'sl-ia2', name: l('Individual Assignment II: Self-reflection & Improvement Plan', '个人作业 II：自我反思与改进计划'), type: 'Individual', weight: 20,
+      // STP 把它排在 W11 那一行，但 STP、作业说明和课件都写明 11/27 截止（按校历属于 W12），以明确日期为准
       releaseWeek: 1, dueWeek: 12, dueDate: '2026-11-27', dueTime: '17:00',
       requirements: l('≤ 3 pages; Calibri 12, 1.5 spacing, A4; one PDF to iSpace', '不超过 3 页；Calibri 12 号、1.5 倍行距、A4；提交一个 PDF 到 iSpace'),
       aiPolicy: GCAP_AI, latePolicy: LATE_20_40_60,
-      conflict: l('The STP lists it under Week 11 ("due in Week 11"), but 27 Nov falls in Week 12 of the academic calendar.', 'STP 把它写在第 11 周（"due in Week 11"），但按校历 11/27 属于第 12 周。'),
     }),
     a({
       id: 'sl-gp1', name: l('Group Project I: Part I Report', '小组项目 I：第一部分报告'), type: 'Group', group: true, weight: 10,

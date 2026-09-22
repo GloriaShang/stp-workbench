@@ -1,5 +1,5 @@
 import type { Course, SemesterCalendar } from '../types'
-import { isReadingWeek, resolveDue, teachingWeekOf } from './dates'
+import { isReadingWeek, resolveDue } from './dates'
 
 export type Severity = 'error' | 'warn' | 'info'
 
@@ -30,18 +30,13 @@ export function courseIssues(cal: SemesterCalendar, c: Course): Issue[] {
       continue
     }
     const name = a.name.zh || a.name.en
-    if (a.conflict) push('error', `「${name}」：${a.conflict.zh || a.conflict.en}`, a.id)
     if (a.type === 'Participation' || a.type === 'FinalExam') continue
 
     const due = resolveDue(cal, c, a)
     if (due.confidence === 'tba') push('warn', `「${name}」截止日期未公布（TBA）`, a.id)
     else if (due.confidence === 'none') push('warn', `「${name}」没有截止信息`, a.id)
-    else if (due.confidence === 'inferred') push('info', `「${name}」只写了第 ${a.dueWeek} 周，日期为推算`, a.id)
+    else if (due.confidence === 'inferred') push('info', `「${name}」只写了第 ${a.dueWeek} 周，按该周最早一次课推算`, a.id)
 
-    if (a.dueDate && a.dueWeek) {
-      const real = teachingWeekOf(cal, a.dueDate)
-      if (real && real !== a.dueWeek) push('warn', `「${name}」写的是第 ${a.dueWeek} 周，但 ${a.dueDate} 按校历属于第 ${real} 周`, a.id)
-    }
     if (due.week && isReadingWeek(cal, due.week)) push('info', `「${name}」在 Reading Week 截止`, a.id)
   }
   return out

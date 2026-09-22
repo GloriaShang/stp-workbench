@@ -269,7 +269,7 @@ function courseSheet(wb: ExcelJS.Workbook, cal: SemesterCalendar, c: Course, st:
     const parent = !isLeaf(c, a.id)
     ws.mergeCells(r, 1, r, 3)
     st.set(ws.getCell(r, 1), tx(a.name, L), { fill, bold: depth === 0, indent: depth * 2 })
-    st.set(ws.getCell(r, 4), tx(a.requirements, L) + (a.conflict ? `\n⚠ ${tx(a.conflict, L)}` : ''), { fill, size: st.size - 0.5 })
+    st.set(ws.getCell(r, 4), tx(a.requirements, L), { fill, size: st.size - 0.5 })
     st.set(ws.getCell(r, 5), tx(TYPE_LABEL[a.type], L === 'bi' ? 'zh' : L), {
       center: true,
       fill: st.p.typeColors && !parent ? mix(TYPE_COLOR[a.type], '#ffffff', 0.85) : fill,

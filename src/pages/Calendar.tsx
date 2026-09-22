@@ -592,7 +592,6 @@ function Popover({ ev, x, y, onClose, onAdopt, onDismiss, onStatus }: {
         <div className="space-y-1.5">
           <div>{ev.sub}</div>
           {assessment.requirements && <div className="text-muted">{assessment.requirements.zh || assessment.requirements.en}</div>}
-          {assessment.conflict && <div className="text-danger">⚠ {assessment.conflict.zh}</div>}
           <div className="flex items-center gap-2 pt-1">
             状态
             <select className="field" value={assessment.status} onChange={(e) => onStatus(e.target.value as AssessmentStatus)}>

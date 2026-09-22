@@ -102,7 +102,12 @@ export const useStore = create<State>()(
     }),
     {
       name: 'stp-planner-v1',
-      version: 1,
+      version: 2,
+      migrate: (persisted, from) => {
+        const p = persisted as Partial<State>
+        if (from < 2 && p.courses) p.courses = migrateV2(p.courses)
+        return p as State
+      },
       // 新版本给规则加了字段时，旧的本地数据里没有这些字段：逐层用默认值补齐
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<State>
@@ -119,10 +124,33 @@ export const useStore = create<State>()(
   ),
 )
 
+/**
+ * v2："宁可提前"——去掉矛盾提示，FM 作业 2/3 的发布事项移到较早的周，Service L 个人作业 II 的事项移到 W12。
+ * 只替换仍是旧内置文字的行，自己改过的内容不动。
+ */
+const V2_ROWS: Record<string, { week: number; oldEn?: string }[]> = {
+  FIN3073: [{ week: 5, oldEn: 'Assignment 1 due' }, { week: 6, oldEn: 'Assignment 2 posted' }, { week: 9 }, { week: 11, oldEn: 'Assignment 3 posted' }],
+  GCAP3213: [{ week: 11, oldEn: 'Individual assignment II due 17:00, Fri 27 Nov (listed in Week 11)' }, { week: 12 }],
+}
+function migrateV2(courses: Course[]): Course[] {
+  return courses.map((c) => {
+    const seed = SEED_COURSES.find((x) => x.code === c.code)
+    const rows = V2_ROWS[c.code]
+    const assessments = c.assessments.map(({ conflict: _drop, ...a }: Assessment & { conflict?: unknown }) => a)
+    if (!seed || !rows) return { ...c, assessments }
+    const weekly = c.weekly.map((r) => {
+      const rule = rows.find((x) => x.week === r.week)
+      if (!rule || (r.events?.en ?? undefined) !== rule.oldEn) return r
+      return { ...r, events: seed.weekly.find((x) => x.week === r.week)?.events }
+    })
+    return { ...c, assessments, weekly }
+  })
+}
+
 export const backupJSON = () => {
   const s = useStore.getState()
   return JSON.stringify(
-    { version: 1, exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed },
+    { version: 2, exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed },
     null,
     2,
   )
