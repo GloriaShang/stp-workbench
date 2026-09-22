@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* 与 Obsidian vault 一致：英文数字 Times New Roman，中文宋体-简 */
+@font-face {
+  font-family: 'AcademicMix';
+  src: local('Times New Roman');
+  unicode-range: U+0000-024F, U+2000-206F;
+}
+@font-face {
+  font-family: 'AcademicMix';
+  src: local('Songti SC'), local('STSong'), local('SimSun');
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+FF00-FFEF;
+}
+
+/* 颜色令牌：浅色 = Obsidian 默认浅色，深色 = Obsidian 默认深色；主色沿用 Day Planner 渐变两端 */
+:root {
+  --bg: #f6f6f6;
+  --panel: #ffffff;
+  --panel-2: #fafafa;
+  --line: #e3e3e3;
+  --line-soft: #efefef;
+  --text: #222222;
+  --muted: #7a7a7a;
+  --accent: #006466;
+  --accent-2: #4d194d;
+  --today: #7a5af8;
+  --danger: #b3261e;
+  --warn: #b35900;
+  --ok: #3f7f5a;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #1e1e1e;
+    --panel: #262626;
+    --panel-2: #2b2b2b;
+    --line: #3a3a3a;
+    --line-soft: #313131;
+    --text: #dcddde;
+    --muted: #9a9a9a;
+    --accent: #3aa6a4;
+    --accent-2: #b07cc6;
+    --today: #8f78ff;
+    --danger: #ef6b62;
+    --warn: #e59a4c;
+    --ok: #6fbf8e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #1e1e1e;
+  --panel: #262626;
+  --panel-2: #2b2b2b;
+  --line: #3a3a3a;
+  --line-soft: #313131;
+  --text: #dcddde;
+  --muted: #9a9a9a;
+  --accent: #3aa6a4;
+  --accent-2: #b07cc6;
+  --today: #8f78ff;
+  --danger: #ef6b62;
+  --warn: #e59a4c;
+  --ok: #6fbf8e;
+  color-scheme: dark;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-today: var(--today);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-ok: var(--ok);
+  --font-serif: 'AcademicMix', 'Times New Roman', 'Songti SC', 'SimSun', serif;
+}
+
+/* 放进 layer，确保 Tailwind 的工具类（如 text-xs）能覆盖这些默认样式 */
+@layer base {
+html {
+  font-size: 15px;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  -webkit-font-smoothing: antialiased;
+}
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+input[type='number']::-webkit-inner-spin-button {
+  opacity: 0.4;
+}
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* 细滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+}
+
+@layer components {
+.field {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  outline: none;
+  min-width: 0;
+}
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.cell-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+  resize: none;
+}
+.cell-input:hover {
+  border-color: var(--line);
+}
+.cell-input:focus {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+}
