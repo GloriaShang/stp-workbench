@@ -91,7 +91,7 @@ export const useStore = create<State>()(
         const d = JSON.parse(json)
         if (!Array.isArray(d.courses)) throw new Error('备份文件格式不对：缺少 courses')
         set({
-          courses: d.courses,
+          courses: (Number(d.version) || 1) < 2 ? migrateV2(d.courses) : d.courses,
           exportPrefs: { ...DEFAULT_EXPORT, ...d.exportPrefs },
           rules: { ...DEFAULT_RULES, ...d.rules },
           obsidian: { ...DEFAULT_OBSIDIAN, ...d.obsidian },
@@ -150,7 +150,7 @@ function migrateV2(courses: Course[]): Course[] {
 export const backupJSON = () => {
   const s = useStore.getState()
   return JSON.stringify(
-    { version: 2, exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed },
+    { version: 2, savedAt: Date.now(), exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed },
     null,
     2,
   )

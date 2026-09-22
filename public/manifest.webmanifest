@@ -1,0 +1,16 @@
+{
+  "name": "STP 学期工作台",
+  "short_name": "STP 工作台",
+  "description": "课程 STP 汇总、Excel 导出、与 Obsidian Day Planner 双向同步的学期日历",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f6f6",
+  "theme_color": "#006466",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

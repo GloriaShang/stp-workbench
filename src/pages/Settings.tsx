@@ -40,7 +40,7 @@ export default function Settings() {
           <span className="flex items-center gap-2">默认 <Num value={obsidian.defaultDurationMinutes} min={5} max={240} step={5} onChange={(v) => setObsidian({ defaultDurationMinutes: v })} /> 分钟</span>
         </div>
         <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-muted">
-          <li>请选择 vault 根目录：<code>/Users/shang/Documents/Obsidian Vault</code>。</li>
+          <li>请选择 vault 的根目录（Mac 上默认是 <code>~/Documents/Obsidian Vault</code>）。</li>
           <li>默认值已经和你的 Day Planner 设置对齐（<code># Day planner</code>、24 小时制、默认 30 分钟）。</li>
           <li>工作台只改动目标那一行；写入前会重读文件，如果那一行已在 Obsidian 里被改过，会放弃写入并提示。</li>
           <li>在 Obsidian 里的修改，工作台每 4 秒、以及切回窗口时自动读取。</li>
@@ -56,8 +56,13 @@ export default function Settings() {
       </Card>
 
       <Card title="数据与备份">
-        <p className="mb-3 text-sm text-muted">
-          课程、编辑记录和所有设置都自动保存在这个浏览器里，关掉重开不会丢。换电脑或清理浏览器数据前，先导出一份备份。
+        <p className="mb-2 text-sm text-muted">
+          课程、编辑和所有设置都自动保存在这个浏览器里，关掉重开不会丢。
+        </p>
+        <p className={`mb-3 text-sm ${vault.status === 'ready' ? 'text-ok' : 'text-muted'}`}>
+          {vault.status === 'ready'
+            ? `已开启自动备份到 vault：每次改动都会写入 .stp-workbench/backup.json，并按天保留快照。${vault.lastBackupAt ? `上次备份 ${new Date(vault.lastBackupAt).toLocaleTimeString('zh-CN')}。` : ''}`
+            : '连接 Obsidian vault 后会自动备份到 vault；换网址、换浏览器或清了缓存，重新连上 vault 就能恢复。'}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
