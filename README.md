@@ -54,7 +54,18 @@ src/lib/excel.ts       Excel 导出（按需加载 exceljs）
 scripts/check.ts       数据层自检：npm run check
 ```
 
-## 部署到 GitHub Pages（可选）
+## 在线使用 / 安装到桌面
 
-仓库里已有 `.github/workflows/deploy.yml`。推到 GitHub 后，在仓库 Settings → Pages 把 Source 设为 GitHub Actions，每次推送 main 会自动部署。
-注意：GitHub Pages 上的网站是公开的，里面包含内置的课程数据（课程名、老师姓名、作业要求）。如果不想公开，把仓库设为私有并只在本地运行，或者换成需要登录的托管方式。
+网址：https://gloriashang.github.io/stp-workbench/
+
+用 Chrome 打开后，点地址栏右侧的「安装」图标（或 菜单 → 投放、保存和分享 → 将页面作为应用安装），工作台就会出现在程序坞和启动台里，以独立窗口打开，没网也能用。
+
+每个人的数据只保存在自己的浏览器里（以及自己连接的 Obsidian vault），不会上传到任何服务器。
+
+## 给同学用
+
+内置的是 BNBU 2026/27 S1 校历和我的 6 门课。不同课表的同学可以在「课程」页增删课程、修改上课时间和评分构成，所有改动只保存在自己的浏览器里。
+
+## 许可
+
+MIT
