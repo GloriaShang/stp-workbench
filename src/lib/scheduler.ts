@@ -15,7 +15,7 @@ export const KIND_LABEL: Record<TaskKind, string> = {
   review: '复习',
   assignment: '个人作业',
   group: '小组作业',
-  inclass: '课堂测验准备',
+  inclass: '课内作业准备',
   exam: '期末复习',
 }
 
@@ -29,9 +29,11 @@ export interface PlannerRules {
   preview: { on: boolean; daysBefore: number; minutes: number; perSession: boolean }
   review: { on: boolean; nextDay: boolean; minutes: number; perSession: boolean }
   assignment: { on: boolean; daysEarly: number }
-  group: { on: boolean; fromWeek: number | null; minutes: number }
+  /** discussDaysBefore：截止前至少 N 天开始讨论；submitDaysEarly：提前 N 天在 iSpace 提交 */
+  group: { on: boolean; fromWeek: number | null; minutes: number; discussDaysBefore: number; submitDaysEarly: number }
   exam: { on: boolean; fromWeek: number }
-  inclass: { on: boolean }
+  /** 课内测验 / 作业 / 展示：至少提前 N 天开始复习、整理资料 */
+  inclass: { on: boolean; daysBefore: number }
   blocks: BlockRule[]
   dailyCapMinutes: number
   dayStart: string
@@ -46,9 +48,9 @@ export const DEFAULT_RULES: PlannerRules = {
   preview: { on: false, daysBefore: 1, minutes: 30, perSession: false },
   review: { on: false, nextDay: false, minutes: 45, perSession: false },
   assignment: { on: false, daysEarly: 3 },
-  group: { on: false, fromWeek: null, minutes: 90 },
+  group: { on: false, fromWeek: null, minutes: 90, discussDaysBefore: 14, submitDaysEarly: 1 },
   exam: { on: false, fromWeek: 13 },
-  inclass: { on: false },
+  inclass: { on: false, daysBefore: 3 },
   blocks: [],
   dailyCapMinutes: 180,
   dayStart: '09:00',
@@ -149,45 +151,70 @@ function buildTasks(cal: SemesterCalendar, courses: Course[], r: PlannerRules, t
       const name = a.name.zh || a.name.en
       const releaseDate = a.releaseWeek ? cal.weeks.find((w) => w.week === a.releaseWeek)?.start : undefined
 
-      if (a.inClass) {
-        if (!r.inclass.on) continue
-        const d = addDays(dueDate, -1)
-        tasks.push({
-          id: `inclass:${c.code}:${a.id}`, kind: 'inclass', course: c, priority: PRIORITY.inclass,
-          minutes: a.type === 'Presentation' ? 90 : 60,
-          days: [d, addDays(d, -1), addDays(d, -2)],
-          title: `${a.type === 'Presentation' ? '排练' : '准备'} ${c.short} ${name}`,
-        })
-        continue
+      // 课内完成的测验 / 作业 / 展示：至少提前 N 天开始复习、整理资料，最后一次放在前一天
+      if (a.inClass && r.inclass.on) {
+        const N = Math.max(1, r.inclass.daysBefore)
+        const n = Math.min(3, N)
+        const isPres = a.type === 'Presentation'
+        for (let i = 0; i < n; i++) {
+          const back = n === 1 ? N : Math.round(N - (i * (N - 1)) / (n - 1))
+          const target = addDays(dueDate, -back)
+          const title = i === 0 ? `开始复习/整理资料 ${c.short} ${name}` : i === n - 1 ? `${isPres ? '排练' : '最后整理'} ${c.short} ${name}` : `复习/整理 ${c.short} ${name}`
+          tasks.push({
+            id: `inclass:${c.code}:${a.id}:${i}`, kind: 'inclass', course: c, priority: PRIORITY.inclass,
+            minutes: isPres && i === n - 1 ? 90 : 60,
+            // 只能往前挪，不能晚于"提前 N 天"
+            days: i === 0 ? [target, addDays(target, -1), addDays(target, -2)] : [target, addDays(target, -1), addDays(target, 1)].filter((d) => d < dueDate),
+            title,
+          })
+        }
       }
 
       if (a.group) {
         if (!r.group.on) continue
-        // 默认从截止前 4 周（且不早于发布周）开始；用户设置了"从第 N 周开始"则以设置为准
-        const auto = Math.max(a.releaseWeek ?? 1, (due.week ?? 5) - 4)
-        const startWeek = r.group.fromWeek ? Math.max(r.group.fromWeek, a.releaseWeek ?? 1) : auto
-        const startDate = cal.weeks.find((w) => w.week === startWeek)?.start ?? addDays(dueDate, -21)
-        // 每周一次，截止前一周加一次
+        // 提交到 iSpace 的目标日：截止前 N 天（课内展示不需要提交）
+        const submitDate = a.inClass ? dueDate : addDays(dueDate, -r.group.submitDaysEarly)
+        // 最晚在截止前 N 天开始讨论；若设置了"从第 N 周开始"且更早，则从那一周开始
+        const discussDate = addDays(dueDate, -Math.max(1, r.group.discussDaysBefore))
+        const configured = r.group.fromWeek ? cal.weeks.find((w) => w.week === Math.max(r.group.fromWeek!, a.releaseWeek ?? 1))?.start : undefined
+        const startDate = configured && configured < discussDate ? configured : discussDate
+
+        tasks.push({
+          id: `group:${c.code}:${a.id}:kickoff`, kind: 'group', course: c, priority: PRIORITY.group - 0.6,
+          minutes: r.group.minutes,
+          days: [startDate, addDays(startDate, -1), addDays(startDate, -2), addDays(startDate, -3)],
+          title: `小组 ${c.short} ${name}：开始讨论`,
+        })
+        // 之后每周一次，直到提交日之前
         const weeks: string[] = []
-        // 校历的周从周日开始，+1 天取到这一周的周一
-        for (let m = mondayOf(addDays(startDate, 1)); m < dueDate; m = addDays(m, 7)) weeks.push(m)
+        // 校历的周从周日开始；+1 天取到这一周的周一，再从下一周开始
+        for (let m = addDays(mondayOf(addDays(startDate, 1)), 7); m < submitDate; m = addDays(m, 7)) weeks.push(m)
         weeks.forEach((mon, i) => {
-          const days = range(mon, addDays(mon, 6)).filter((d) => d < dueDate)
+          const days = range(mon, addDays(mon, 6)).filter((d) => d < submitDate)
           if (!days.length) return
           tasks.push({
             id: `group:${c.code}:${a.id}:${mon}`, kind: 'group', course: c, priority: PRIORITY.group,
             minutes: r.group.minutes, days: days.slice().reverse(),
-            title: `小组 ${c.short} ${name}（第 ${i + 1} 次）`,
+            title: `小组 ${c.short} ${name}（第 ${i + 2} 次）`,
           })
         })
-        const last = range(addDays(dueDate, -6), addDays(dueDate, -1)).reverse()
-        tasks.push({
-          id: `group:${c.code}:${a.id}:final`, kind: 'group', course: c, priority: PRIORITY.group - 0.5,
-          minutes: r.group.minutes, days: last,
-          title: `小组 ${c.short} ${name}：定稿`,
-        })
+        if (!a.inClass) {
+          const last = range(addDays(submitDate, -6), addDays(submitDate, -1)).reverse()
+          tasks.push({
+            id: `group:${c.code}:${a.id}:final`, kind: 'group', course: c, priority: PRIORITY.group - 0.5,
+            minutes: r.group.minutes, days: last,
+            title: `小组 ${c.short} ${name}：定稿`,
+          })
+          tasks.push({
+            id: `group:${c.code}:${a.id}:submit`, kind: 'group', course: c, priority: PRIORITY.group - 0.7,
+            minutes: 30, days: [submitDate, addDays(submitDate, -1)],
+            notAfter: r.group.submitDaysEarly === 0 ? { date: dueDate, time: due.time ?? '23:59' } : undefined,
+            title: `提交到 iSpace：${c.short} ${name}${r.group.submitDaysEarly ? `（提前 ${r.group.submitDaysEarly} 天）` : ''}`,
+          })
+        }
         continue
       }
+      if (a.inClass) continue
 
       if (!r.assignment.on) continue
       const finish = addDays(dueDate, -r.assignment.daysEarly)

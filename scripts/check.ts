@@ -20,7 +20,7 @@ for (const c of courses) {
 for (const i of globalIssues(cal, courses)) console.log(`GLOBAL ${i.message}`)
 
 const all = { ...DEFAULT_RULES, preview: { ...DEFAULT_RULES.preview, on: true }, review: { ...DEFAULT_RULES.review, on: true },
-  assignment: { ...DEFAULT_RULES.assignment, on: true }, group: { ...DEFAULT_RULES.group, on: true }, exam: { ...DEFAULT_RULES.exam, on: true }, inclass: { on: true } }
+  assignment: { ...DEFAULT_RULES.assignment, on: true }, group: { ...DEFAULT_RULES.group, on: true }, exam: { ...DEFAULT_RULES.exam, on: true }, inclass: { ...DEFAULT_RULES.inclass, on: true } }
 const res = schedule(cal, courses, all, [], '2026-09-22', new Set())
 console.log(`\n排程：${res.suggestions.length} 个建议，${res.unplaced.length} 个放不下`)
 res.suggestions.filter((s) => s.date <= '2026-09-27').forEach((s) => console.log(`  ${s.date} ${s.start}-${s.end} ${s.title}`))

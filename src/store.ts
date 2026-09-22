@@ -103,6 +103,16 @@ export const useStore = create<State>()(
     {
       name: 'stp-planner-v1',
       version: 1,
+      // 新版本给规则加了字段时，旧的本地数据里没有这些字段：逐层用默认值补齐
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<State>
+        const rules = { ...DEFAULT_RULES, ...p.rules } as PlannerRules
+        for (const k of Object.keys(DEFAULT_RULES) as (keyof PlannerRules)[]) {
+          const d = DEFAULT_RULES[k]
+          if (d && typeof d === 'object' && !Array.isArray(d)) (rules as unknown as Record<string, unknown>)[k] = { ...d, ...(p.rules?.[k] as object) }
+        }
+        return { ...current, ...p, rules, exportPrefs: { ...DEFAULT_EXPORT, ...p.exportPrefs }, obsidian: { ...DEFAULT_OBSIDIAN, ...p.obsidian } }
+      },
       // 校历由代码内置，不存进 localStorage，方便以后修正校历时自动生效
       partialize: ({ calendar: _c, page: _p, ...rest }) => rest,
     },

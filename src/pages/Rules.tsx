@@ -15,7 +15,7 @@ export default function Rules() {
     setRules((x) => ({
       ...x,
       preview: { ...x.preview, on }, review: { ...x.review, on }, assignment: { ...x.assignment, on },
-      group: { ...x.group, on }, exam: { ...x.exam, on }, inclass: { on },
+      group: { ...x.group, on }, exam: { ...x.exam, on }, inclass: { ...x.inclass, on },
     }))
 
   return (
@@ -48,20 +48,32 @@ export default function Rules() {
             <span className="text-muted">（从发布周开始倒排，占比越高拆得越多）</span>
           </Row>
           <Row on={r.group.on} onToggle={(on) => up('group', { on })}>
-            从第
-            <input
-              className="field w-12 text-center"
-              placeholder="自动"
-              value={r.group.fromWeek ?? ''}
-              onChange={(e) => up('group', { fromWeek: e.target.value ? Number(e.target.value) : null })}
-            />
-            周开始准备<b>小组作业</b>，每周一次
-            <Num value={r.group.minutes} min={30} max={240} step={15} onChange={(minutes) => up('group', { minutes })} />
-            分钟
-            <span className="text-muted">（留空 = 截止前 4 周开始）</span>
+            <span className="flex w-full flex-wrap items-center gap-2">
+              从第
+              <input
+                className="field w-12 text-center"
+                placeholder="自动"
+                value={r.group.fromWeek ?? ''}
+                onChange={(e) => up('group', { fromWeek: e.target.value ? Number(e.target.value) : null })}
+              />
+              周开始准备<b>小组作业</b>，每周一次
+              <Num value={r.group.minutes} min={30} max={240} step={15} onChange={(minutes) => up('group', { minutes })} />
+              分钟
+            </span>
+            <span className="ml-6 flex w-full flex-wrap items-center gap-2">
+              小组作业相关 DDL：至少提前
+              <Num value={r.group.discussDaysBefore} min={1} max={60} onChange={(discussDaysBefore) => up('group', { discussDaysBefore })} className="w-12" />
+              天<b>开始讨论</b>，提前
+              <Num value={r.group.submitDaysEarly} min={0} max={14} onChange={(submitDaysEarly) => up('group', { submitDaysEarly })} className="w-12" />
+              天<b>在 iSpace 提交</b>
+            </span>
+            <span className="ml-6 text-xs text-muted">"从第几周开始"留空时，就从"提前 N 天开始讨论"那天开始；课内展示不需要提交，只排讨论。</span>
           </Row>
           <Row on={r.inclass.on} onToggle={(on) => up('inclass', { on })}>
-            <b>课堂测验 / 展示</b>前一天安排准备或排练
+            如有 <b>in-class assignment</b>（课堂测验、开卷作业、展示），至少提前
+            <Num value={r.inclass.daysBefore} min={1} max={21} onChange={(daysBefore) => up('inclass', { daysBefore })} className="w-12" />
+            天<b>复习 / 整理资料</b>
+            <span className="text-muted">（展示的最后一次改为排练）</span>
           </Row>
           <Row on={r.exam.on} onToggle={(on) => up('exam', { on })}>
             从第
