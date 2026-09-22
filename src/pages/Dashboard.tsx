@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Badge, Card, COURSE_DOT, Empty } from '../components/ui'
-import { classOccurrences, diffDays, resolveDue, shortDate, teachingWeekOf, todayISO, WEEKDAY_ZH, weekdayOf, weekRangeLabel } from '../lib/dates'
+import { classOccurrences, diffDays, resolveDue, shortDate, teachingWeekOf, WEEKDAY_ZH, weekdayOf, weekRangeLabel } from '../lib/dates'
 import { useSuggestions } from '../lib/events'
 import { matchCourse, NEUTRAL } from '../lib/courseMatch'
 import type { ObsidianTask } from '../lib/obsidian'
@@ -9,19 +9,20 @@ import { STATUS_LABEL, TYPE_LABEL } from '../lib/i18n'
 import { courseIssues, globalIssues, isLeaf, weeklyLoad } from '../lib/validate'
 import { useStore } from '../store'
 import { useVault } from '../vault'
+import { useToday } from '../today'
 import type { AssessmentStatus } from '../types'
 
 export default function Dashboard() {
   const { calendar, courses, setAssessment, setPage, set, localTasks } = useStore()
   const vault = useVault()
   const { suggestions } = useSuggestions()
-  const today = todayISO()
+  const today = useToday((s) => s.today)
   const week = teachingWeekOf(calendar, today)
 
   useEffect(() => {
     vault.load([today])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vault.status])
+  }, [vault.status, today])
 
   // 今天：上课 + Obsidian 待办 + 建议，按时间合并
   const todayItems = useMemo(() => {

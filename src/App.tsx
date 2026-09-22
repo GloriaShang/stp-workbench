@@ -5,9 +5,10 @@ import Dashboard from './pages/Dashboard'
 import Export from './pages/Export'
 import Rules from './pages/Rules'
 import Settings from './pages/Settings'
-import { teachingWeekOf, todayISO } from './lib/dates'
+import { teachingWeekOf } from './lib/dates'
 import { useStore, type Page, type ThemeMode } from './store'
 import { useVault } from './vault'
+import { useToday } from './today'
 
 const NAV: { id: Page; label: string; icon: string }[] = [
   { id: 'dashboard', label: '仪表盘', icon: '◧' },
@@ -35,7 +36,8 @@ export default function App() {
     else root.setAttribute('data-theme', themeMode)
   }, [themeMode])
 
-  const week = teachingWeekOf(calendar, todayISO())
+  const today = useToday((s) => s.today)
+  const week = teachingWeekOf(calendar, today)
 
   return (
     <div className="flex h-screen overflow-hidden">

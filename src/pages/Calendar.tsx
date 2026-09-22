@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPE } from 'react'
 import { Badge, Button, Check, Segmented } from '../components/ui'
-import { addDays, fromISO, hhmm, minutes, mondayOf, teachingWeekOf, todayISO, WEEKDAY_ZH, weekdayOf } from '../lib/dates'
+import { addDays, fromISO, hhmm, minutes, mondayOf, teachingWeekOf, WEEKDAY_ZH, weekdayOf } from '../lib/dates'
 import { buildEvents, useSuggestions, type CalEvent } from '../lib/events'
 import { STATUS_LABEL } from '../lib/i18n'
 import { useStore, type CalView } from '../store'
 import { useVault } from '../vault'
 import * as tasks from '../tasks'
+import { useToday } from '../today'
 import type { AssessmentStatus } from '../types'
 
 const START_H = 7
@@ -82,7 +83,16 @@ export default function CalendarPage() {
   const { calendar, courses, view, layers, set, markAdopted, dismiss, setAssessment, localTasks } = useStore()
   const vault = useVault()
   const { suggestions } = useSuggestions()
-  const [anchor, setAnchor] = useState(todayISO())
+  const today = useToday((s) => s.today)
+  const [anchor, setAnchor] = useState(today)
+  // 过了 0 点：如果还停在"今天"那一页，就跟着跳到新的一天；自己翻到别的日期则不动
+  const prevToday = useRef(today)
+  useEffect(() => {
+    // 先存下旧值：setAnchor 的回调是延后执行的，那时 ref 已经被改成新日期了
+    const prev = prevToday.current
+    prevToday.current = today
+    setAnchor((a) => (a === prev ? today : a))
+  }, [today])
   const dates = useMemo(() => datesFor(view, anchor), [view, anchor])
   const [pop, setPop] = useState<{ ev: CalEvent; x: number; y: number } | null>(null)
   // 时间轴上点空白 → 新建定时待办；点日期 / 全天栏 → 新建不定时待办
@@ -142,7 +152,7 @@ export default function CalendarPage() {
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b border-line bg-panel px-4 py-2">
         <Button kind="ghost" onClick={() => go(-1)} aria-label="上一页">‹</Button>
-        <Button onClick={() => setAnchor(todayISO())}>今天</Button>
+        <Button onClick={() => setAnchor(today)}>今天</Button>
         <Button kind="ghost" onClick={() => go(1)} aria-label="下一页">›</Button>
         <div className="ml-1 text-lg font-bold">{title}</div>
         {wk && <Badge color="var(--accent)">第 {wk} 周</Badge>}
@@ -273,7 +283,7 @@ function TimeGrid(p: {
   const cols = useRef<HTMLDivElement>(null)
   const [drag, setDrag] = useState<Drag | null>(null)
   const [now, setNow] = useState(new Date())
-  const today = todayISO()
+  const today = useToday((s) => s.today)
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60_000)
@@ -746,7 +756,7 @@ function Popover({ ev, x, y, onClose, onAdopt, onDismiss, onStatus }: {
 
 function MonthGrid({ dates, anchor, events, onPick }: { dates: string[]; anchor: string; events: CalEvent[]; onPick: (d: string) => void }) {
   const month = anchor.slice(0, 7)
-  const today = todayISO()
+  const today = useToday((s) => s.today)
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-panel">
       <div className="grid grid-cols-7 border-b border-line text-center text-xs text-muted">

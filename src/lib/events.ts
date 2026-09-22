@@ -2,8 +2,9 @@ import { useMemo } from 'react'
 import { useStore, type LocalTask } from '../store'
 import { localAsTask } from '../tasks'
 import { useVault } from '../vault'
+import { useToday } from '../today'
 import type { Course, SemesterCalendar } from '../types'
-import { classOccurrences, resolveDue, todayISO } from './dates'
+import { classOccurrences, resolveDue } from './dates'
 import type { ObsidianTask } from './obsidian'
 import { schedule, type Busy, type Suggestion } from './scheduler'
 import { matchCourse, NEUTRAL } from './courseMatch'
@@ -99,12 +100,13 @@ export function buildEvents(
 export function useSuggestions() {
   const { calendar, courses, rules, adopted, dismissed, localTasks } = useStore()
   const days = useVault((s) => s.days)
+  const today = useToday((s) => s.today)
   return useMemo(() => {
     const anyOn = rules.preview.on || rules.review.on || rules.assignment.on || rules.group.on || rules.exam.on || rules.inclass.on
     if (!anyOn) return { suggestions: [], unplaced: [] }
     const busy: Busy[] = []
     for (const d of Object.values(days)) for (const t of d.tasks) if (t.start && t.end) busy.push({ date: t.date, start: t.start, end: t.end })
     for (const t of localTasks) if (t.start && t.end) busy.push({ date: t.date, start: t.start, end: t.end })
-    return schedule(calendar, courses, rules, busy, todayISO(), new Set([...adopted, ...dismissed]))
-  }, [calendar, courses, rules, adopted, dismissed, days, localTasks])
+    return schedule(calendar, courses, rules, busy, today, new Set([...adopted, ...dismissed]))
+  }, [calendar, courses, rules, adopted, dismissed, days, localTasks, today])
 }
