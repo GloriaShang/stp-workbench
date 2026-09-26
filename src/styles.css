@@ -176,6 +176,10 @@ input[type='number']::-webkit-inner-spin-button {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+.calendar-create-zone {
+  /* 手机双击轻触由日历处理，不触发 Safari 的双击缩放。 */
+  touch-action: manipulation;
+}
 @media (max-width: 639px) {
   .mobile-bottom-nav {
     padding-bottom: env(safe-area-inset-bottom);

@@ -96,7 +96,7 @@ export default function CalendarPage() {
   }, [today])
   const dates = useMemo(() => datesFor(view, anchor), [view, anchor])
   const [pop, setPop] = useState<{ ev: CalEvent; x: number; y: number } | null>(null)
-  // 时间轴上点空白 → 新建定时待办；点日期 / 全天栏 → 新建不定时待办
+  // 时间轴上双击空白 → 新建定时待办；日期旁「＋」或双击全天栏 → 新建不定时待办
   const [quick, setQuick] = useState<{ date: string; start: number } | null>(null)
   const [quickDay, setQuickDay] = useState<string | null>(null)
   const [toast, setToast] = useState('')
@@ -413,9 +413,9 @@ function TimeGrid(p: {
             return (
               <div
                 key={d}
-                className="min-h-8 cursor-text space-y-0.5 border-l border-line-soft p-0.5"
-                title="点击空白处新建这一天的待办"
-                onClick={(e) => e.target === e.currentTarget && p.onDayClick(d)}
+                className="calendar-create-zone min-h-8 cursor-text space-y-0.5 border-l border-line-soft p-0.5"
+                title="双击空白处新建这一天的待办"
+                onDoubleClick={(e) => e.target === e.currentTarget && p.onDayClick(d)}
               >
                 {list.map((ev) => (
                   <AllDayChip key={ev.id} ev={ev} onClick={(x, y) => p.onEventClick(ev, x, y)} onToggle={p.onToggle} />
@@ -448,10 +448,10 @@ function TimeGrid(p: {
               return (
                 <div
                   key={d}
-                  className={`relative border-l border-line-soft ${isToday ? 'bg-[color-mix(in_srgb,var(--today)_4%,transparent)]' : ''}`}
-                  onPointerDown={(e) => {
+                  className={`calendar-create-zone relative border-l border-line-soft ${isToday ? 'bg-[color-mix(in_srgb,var(--today)_4%,transparent)]' : ''}`}
+                  title="双击空白时间新建待办"
+                  onDoubleClick={(e) => {
                     if (e.target !== e.currentTarget) return
-                    // 阻止浏览器默认的"点击空白处移走焦点"，否则刚出现的输入框会立刻失焦关闭
                     e.preventDefault()
                     const r = e.currentTarget.getBoundingClientRect()
                     p.onEmptyClick(d, clampMin(toMin(e.clientY - r.top - HOUR / 4)))
