@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPE } from 'react'
 import { Badge, Button, Check, Segmented } from '../components/ui'
+import { VaultNotice } from '../components/VaultNotice'
 import { addDays, fromISO, hhmm, minutes, mondayOf, teachingWeekOf, WEEKDAY_ZH, weekdayOf } from '../lib/dates'
 import { buildEvents, useSuggestions, type CalEvent } from '../lib/events'
 import { STATUS_LABEL } from '../lib/i18n'
@@ -177,12 +178,15 @@ export default function CalendarPage() {
         )}
       </div>
 
+      <VaultNotice />
       {view === 'month' ? (
         <MonthGrid dates={dates} anchor={anchor} events={events} onPick={(d) => { setAnchor(d); set({ view: 'day' }) }} />
       ) : (
         <TimeGrid
           dates={dates}
           events={events}
+          onPrev={() => go(-1)}
+          onNext={() => go(1)}
           onEventClick={(ev, x, y) => setPop({ ev, x, y })}
           onEmptyClick={(date, start) => { setQuickDay(null); setQuick({ date, start }) }}
           onDayOpen={(d) => { setAnchor(d); set({ view: 'day' }) }}
@@ -266,6 +270,8 @@ function VaultPill() {
 function TimeGrid(p: {
   dates: string[]
   events: CalEvent[]
+  onPrev: () => void
+  onNext: () => void
   onEventClick: (ev: CalEvent, x: number, y: number) => void
   onEmptyClick: (date: string, start: number) => void
   onCommit: (d: Drag) => void
@@ -340,10 +346,10 @@ function TimeGrid(p: {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-panel">
       {/* 表头：星期 + 日期 */}
-      <div className="flex border-b border-line">
+      <div className="relative flex border-b border-line">
         <div className="w-14 shrink-0" />
         <div className="grid flex-1" style={colTemplate}>
-          {dates.map((d) => {
+          {dates.map((d, di) => {
             const isToday = d === today
             return (
               <div key={d} className="flex flex-col items-center py-1.5">
@@ -351,13 +357,37 @@ function TimeGrid(p: {
                   {WEEKDAY_ZH[weekdayOf(d)]}
                   <button className="rounded px-1 hover:bg-panel-2 hover:text-accent" title="新建这一天的待办" onClick={() => p.onDayClick(d)}>＋</button>
                 </span>
-                <button
-                  onClick={() => p.onDayOpen(d)}
-                  title={dates.length > 1 ? '只看这一天' : undefined}
-                  className={`mt-0.5 rounded-md px-3 py-0.5 text-lg ${isToday ? 'bg-today text-white' : dates.length > 1 ? 'hover:bg-panel-2' : ''}`}
-                >
-                  {fromISO(d).getDate()}
-                </button>
+                <div className="mt-0.5 flex items-center gap-2">
+                  {di === 0 && (
+                    <button
+                      type="button"
+                      onClick={p.onPrev}
+                      aria-label="查看上一页日程"
+                      title="上一页"
+                      className="calendar-page-arrow"
+                    >
+                      ‹
+                    </button>
+                  )}
+                  <button
+                    onClick={() => p.onDayOpen(d)}
+                    title={dates.length > 1 ? '只看这一天' : undefined}
+                    className={`rounded-md px-3 py-0.5 text-lg ${isToday ? 'bg-today text-ink ring-1 ring-accent/30' : dates.length > 1 ? 'hover:bg-accent-soft' : ''}`}
+                  >
+                    {fromISO(d).getDate()}
+                  </button>
+                  {di === dates.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={p.onNext}
+                      aria-label="查看下一页日程"
+                      title="下一页"
+                      className="calendar-page-arrow"
+                    >
+                      ›
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}

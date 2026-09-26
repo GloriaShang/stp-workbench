@@ -74,7 +74,7 @@ export const useStore = create<State>()(
       adopted: [],
       dismissed: [],
       localTasks: [],
-      themeMode: 'system',
+      themeMode: 'light',
       view: 'week',
       layers: { classes: true, deadlines: true, obsidian: true, suggestions: true },
       page: 'dashboard',

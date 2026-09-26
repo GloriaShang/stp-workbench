@@ -51,7 +51,7 @@ export default function App() {
             <button
               key={n.id}
               onClick={() => setPage(n.id)}
-              className={`flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-left text-[15px] ${page === n.id ? 'bg-panel font-bold text-accent shadow-sm' : 'hover:bg-panel'}`}
+              className={`flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-left text-[15px] ${page === n.id ? 'bg-accent-soft font-bold text-accent' : 'hover:bg-accent-soft'}`}
             >
               <span className="w-4 text-center opacity-70">{n.icon}</span>
               {n.label}
@@ -61,7 +61,7 @@ export default function App() {
         <div className="space-y-2 border-t border-line px-4 py-3 text-xs text-muted">
           <div className="flex items-center gap-1.5">
             <span className={vaultStatus === 'ready' ? 'text-ok' : 'text-muted'}>●</span>
-            Obsidian {vaultStatus === 'ready' ? '已连接' : '未连接'}
+            Obsidian {vaultStatus === 'ready' ? '已连接' : vaultStatus === 'needs-permission' ? '日程待授权' : '未连接'}
           </div>
           <button className="flex items-center gap-1.5 hover:text-ink" onClick={() => set({ themeMode: NEXT_MODE[themeMode] })} title="切换明暗">
             <span>{MODE_ICON[themeMode]}</span>

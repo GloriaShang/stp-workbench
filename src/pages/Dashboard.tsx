@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Badge, Card, COURSE_DOT, Empty } from '../components/ui'
+import { VaultNotice } from '../components/VaultNotice'
 import { classOccurrences, diffDays, resolveDue, shortDate, teachingWeekOf, WEEKDAY_ZH, weekdayOf, weekRangeLabel } from '../lib/dates'
 import { useSuggestions } from '../lib/events'
 import { matchCourse, NEUTRAL } from '../lib/courseMatch'
@@ -70,6 +71,7 @@ export default function Dashboard() {
         <span className="text-sm text-muted">{calendar.name}</span>
       </div>
 
+      <VaultNotice />
       <div className="grid gap-4 lg:grid-cols-[1fr_1.35fr]">
         <Card title="今天" extra={<button className="text-sm text-accent" onClick={() => { set({ view: 'day' }); setPage('calendar') }}>打开日历 →</button>}>
           {todayItems.length ? (
@@ -91,7 +93,7 @@ export default function Dashboard() {
               ))}
             </ul>
           ) : (
-            <Empty>今天没有课，也没有待办</Empty>
+            <Empty>{vault.status !== 'ready' ? '当天的 Obsidian 待办尚未加载' : !vault.days[today] ? '正在读取当天日程…' : '今天没有课，也没有待办'}</Empty>
           )}
           {vault.status !== 'ready' && (
             <p className="mt-3 text-xs text-muted">

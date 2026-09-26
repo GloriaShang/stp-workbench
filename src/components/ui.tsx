@@ -17,7 +17,7 @@ export function Card({ title, extra, children, className = '' }: { title?: React
 type BtnKind = 'primary' | 'ghost' | 'danger' | 'plain'
 export function Button({ kind = 'plain', className = '', ...p }: ButtonHTMLAttributes<HTMLButtonElement> & { kind?: BtnKind }) {
   const k = {
-    primary: 'bg-accent text-white border-accent hover:opacity-90',
+    primary: 'bg-accent-soft text-accent border-accent/40 hover:border-accent',
     plain: 'bg-panel border-line hover:bg-panel-2',
     ghost: 'border-transparent hover:bg-panel-2',
     danger: 'bg-panel border-line text-danger hover:bg-panel-2',
@@ -74,7 +74,7 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
         <button
           key={o.v}
           onClick={() => onChange(o.v)}
-          className={`rounded px-2.5 py-0.5 transition ${value === o.v ? 'bg-accent text-white' : 'hover:bg-panel-2'}`}
+          className={`rounded px-2.5 py-0.5 transition ${value === o.v ? 'bg-accent-soft text-accent ring-1 ring-accent/30' : 'hover:bg-accent-soft'}`}
         >
           {o.label}
         </button>

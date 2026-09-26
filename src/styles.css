@@ -12,55 +12,58 @@
   unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+FF00-FFEF;
 }
 
-/* 颜色令牌：浅色 = Obsidian 默认浅色，深色 = Obsidian 默认深色；主色沿用 Day Planner 渐变两端 */
+/* 白色为主体；薰衣草紫只用于边缘、按钮与选中状态。 */
 :root {
-  --bg: #f6f6f6;
+  --bg: #ffffff;
   --panel: #ffffff;
-  --panel-2: #fafafa;
-  --line: #e3e3e3;
-  --line-soft: #efefef;
-  --text: #222222;
-  --muted: #7a7a7a;
-  --accent: #006466;
-  --accent-2: #4d194d;
-  --today: #7a5af8;
+  --panel-2: #ffffff;
+  --line: #dfd5ec;
+  --line-soft: #f0ecf5;
+  --text: #302c35;
+  --muted: #77717e;
+  --accent: #78608f;
+  --accent-2: #655078;
+  --accent-soft: #f1ecf8;
+  --today: #eee5f8;
   --danger: #b3261e;
   --warn: #b35900;
-  --ok: #3f7f5a;
+  --ok: #78608f;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #1e1e1e;
-    --panel: #262626;
-    --panel-2: #2b2b2b;
-    --line: #3a3a3a;
-    --line-soft: #313131;
-    --text: #dcddde;
-    --muted: #9a9a9a;
-    --accent: #3aa6a4;
-    --accent-2: #b07cc6;
-    --today: #8f78ff;
+    --bg: #1e1a27;
+    --panel: #272131;
+    --panel-2: #2d2639;
+    --line: #453a55;
+    --line-soft: #382f45;
+    --text: #ede8f4;
+    --muted: #aa9fb8;
+    --accent: #b79af7;
+    --accent-2: #d2c0ff;
+    --accent-soft: #3c314c;
+    --today: #9d7aea;
     --danger: #ef6b62;
     --warn: #e59a4c;
-    --ok: #6fbf8e;
+    --ok: #a98ee8;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --bg: #1e1e1e;
-  --panel: #262626;
-  --panel-2: #2b2b2b;
-  --line: #3a3a3a;
-  --line-soft: #313131;
-  --text: #dcddde;
-  --muted: #9a9a9a;
-  --accent: #3aa6a4;
-  --accent-2: #b07cc6;
-  --today: #8f78ff;
+  --bg: #1e1a27;
+  --panel: #272131;
+  --panel-2: #2d2639;
+  --line: #453a55;
+  --line-soft: #382f45;
+  --text: #ede8f4;
+  --muted: #aa9fb8;
+  --accent: #b79af7;
+  --accent-2: #d2c0ff;
+  --accent-soft: #3c314c;
+  --today: #9d7aea;
   --danger: #ef6b62;
   --warn: #e59a4c;
-  --ok: #6fbf8e;
+  --ok: #a98ee8;
   color-scheme: dark;
 }
 
@@ -74,6 +77,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
   --color-today: var(--today);
   --color-danger: var(--danger);
   --color-warn: var(--warn);
@@ -116,6 +120,30 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 @layer components {
+.calendar-page-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--panel));
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 1;
+  transition: background 150ms, border-color 150ms;
+}
+.calendar-page-arrow:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 20%, var(--panel));
+}
+.calendar-page-arrow:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .field {
   background: var(--panel);
   border: 1px solid var(--line);
