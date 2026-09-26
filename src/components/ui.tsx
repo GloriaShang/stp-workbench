@@ -67,9 +67,9 @@ export function Num({ value, onChange, min = 0, max = 999, step = 1, className =
   )
 }
 
-export function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { v: T; label: ReactNode }[]; onChange: (v: T) => void }) {
+export function Segmented<T extends string>({ value, options, onChange, className = '' }: { value: T; options: { v: T; label: ReactNode }[]; onChange: (v: T) => void; className?: string }) {
   return (
-    <div className="inline-flex rounded-md border border-line bg-panel p-0.5 text-sm">
+    <div className={`inline-flex rounded-md border border-line bg-panel p-0.5 text-sm ${className}`}>
       {options.map((o) => (
         <button
           key={o.v}

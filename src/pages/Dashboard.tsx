@@ -61,7 +61,7 @@ export default function Dashboard() {
   const issues = [...courses.flatMap((c) => courseIssues(calendar, c)), ...globalIssues(calendar, courses)].filter((i) => i.severity !== 'info')
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-5">
+    <div className="mx-auto max-w-6xl space-y-4 p-3 sm:p-5">
       <div className="flex flex-wrap items-baseline gap-3">
         <h1 className="text-2xl font-bold">
           {shortDate(today)} {WEEKDAY_ZH[weekdayOf(today)]}
@@ -104,11 +104,11 @@ export default function Dashboard() {
         </Card>
 
         <Card title="接下来的截止" extra={<span className="text-xs text-muted">{upcoming.length} 项</span>}>
-          <ul className="max-h-80 divide-y divide-line-soft overflow-y-auto">
+          <ul className="max-h-80 divide-y divide-line-soft overflow-auto">
             {upcoming.map(({ c, a, d }) => {
               const left = d.date ? diffDays(today, d.date) : undefined
               return (
-                <li key={a.id} className="flex items-center gap-3 py-1.5 text-sm">
+                <li key={a.id} className="flex min-w-[620px] items-center gap-3 py-1.5 text-sm sm:min-w-0">
                   <span className={`w-14 shrink-0 text-right tabular-nums ${left !== undefined && left <= 7 ? 'font-bold text-danger' : 'text-muted'}`}>
                     {left === undefined ? 'TBA' : left === 0 ? '今天' : `${left} 天`}
                   </span>

@@ -19,7 +19,7 @@ export default function Rules() {
     }))
 
   return (
-    <div className="mx-auto max-w-5xl space-y-4 p-5">
+    <div className="mx-auto max-w-5xl space-y-4 p-3 sm:p-5">
       <Card title="常规设置" extra={<span className="text-xs text-muted">可以全部勾选</span>}>
         <div className="space-y-3 text-sm">
           <Row on={r.preview.on} onToggle={(on) => up('preview', { on })}>
@@ -84,7 +84,7 @@ export default function Rules() {
         </div>
       </Card>
 
-      <div className="flex items-center gap-4 rounded-lg border border-accent/40 bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] px-4 py-3">
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-accent/40 bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] px-3 py-3 sm:gap-4 sm:px-4">
         <span className="text-2xl">🤖</span>
         <div className="flex-1 text-sm">
           <b>小助手：</b>不知道怎么选？建议「常规设置」全部勾选，对自己的学习负责哦！加油 :)

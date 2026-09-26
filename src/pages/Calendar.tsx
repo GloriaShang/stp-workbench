@@ -101,6 +101,13 @@ export default function CalendarPage() {
   const [quickDay, setQuickDay] = useState<string | null>(null)
   const [toast, setToast] = useState('')
 
+  // 手机上首次打开日历时不要把 7 天挤进窄屏；用户仍可手动切换到其他视图。
+  useEffect(() => {
+    if (window.matchMedia('(max-width: 639px)').matches && view === 'week') set({ view: 'day' })
+    // 只在本页首次挂载时决定默认视图，避免干扰之后的手动选择。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // 读取并轮询可见日期的 Obsidian 文件（在 Obsidian 里改动后几秒内同步过来）
   const dateKey = dates.join(',')
   useEffect(() => {
@@ -151,26 +158,27 @@ export default function CalendarPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-line bg-panel px-4 py-2">
-        <Button kind="ghost" onClick={() => go(-1)} aria-label="上一页">‹</Button>
-        <Button onClick={() => setAnchor(today)}>今天</Button>
-        <Button kind="ghost" onClick={() => go(1)} aria-label="下一页">›</Button>
-        <div className="ml-1 text-lg font-bold">{title}</div>
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-2 py-2 sm:gap-2 sm:px-4">
+        <Button kind="ghost" className="px-2 sm:px-3" onClick={() => go(-1)} aria-label="上一页">‹</Button>
+        <Button className="px-2.5 sm:px-3" onClick={() => setAnchor(today)}>今天</Button>
+        <Button kind="ghost" className="px-2 sm:px-3" onClick={() => go(1)} aria-label="下一页">›</Button>
+        <div className="ml-0.5 text-base font-bold sm:ml-1 sm:text-lg">{title}</div>
         {wk && <Badge color="var(--accent)">第 {wk} 周</Badge>}
-        <div className="flex-1" />
+        <div className="hidden flex-1 sm:block" />
         <Segmented<CalView>
           value={view}
           onChange={(v) => set({ view: v })}
+          className="ml-auto max-w-full overflow-x-auto"
           options={[{ v: 'day', label: '日' }, { v: '3day', label: '3 天' }, { v: 'week', label: '周' }, { v: 'month', label: '月' }]}
         />
       </div>
-      <div className="flex flex-wrap items-center gap-4 border-b border-line bg-panel-2 px-4 py-1.5 text-sm">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line bg-panel-2 px-3 py-2 text-sm sm:gap-4 sm:px-4 sm:py-1.5">
         <Check checked={layers.classes} onChange={(v) => set({ layers: { ...layers, classes: v } })} label="上课" />
         <Check checked={layers.deadlines} onChange={(v) => set({ layers: { ...layers, deadlines: v } })} label="截止" />
         <Check checked={layers.obsidian} onChange={(v) => set({ layers: { ...layers, obsidian: v } })} label="待办" />
         <Check checked={layers.suggestions} onChange={(v) => set({ layers: { ...layers, suggestions: v } })} label="建议学习块" />
-        <div className="flex-1" />
-        <VaultPill />
+        <div className="hidden flex-1 sm:block" />
+        <div className="w-full sm:w-auto"><VaultPill /></div>
         {view !== 'month' && visibleSug.length > 0 && (
           <Button kind="primary" onClick={adoptAll} disabled={vault.busy}>
             采纳可见的 {visibleSug.length} 个建议
@@ -260,7 +268,7 @@ function VaultPill() {
     )
   return (
     <button className="text-xs text-muted underline" onClick={() => setPage('settings')}>
-      {status === 'unsupported' ? '当前浏览器不支持连接 Obsidian（请用 Chrome）' : status === 'no-daily-dir' ? '找不到 Daily Matter 文件夹' : '未连接 Obsidian（待办先存在工作台）'}
+      {status === 'unsupported' ? <><span className="sm:hidden">手机端使用本机日程</span><span className="hidden sm:inline">当前浏览器不支持连接 Obsidian（请用 Chrome）</span></> : status === 'no-daily-dir' ? '找不到 Daily Matter 文件夹' : '未连接 Obsidian（待办先存在工作台）'}
     </button>
   )
 }
@@ -342,13 +350,14 @@ function TimeGrid(p: {
 
   const gridH = (END_H - START_H) * HOUR
   const colTemplate = { gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))` }
+  const gridStyle = dates.length > 1 ? { ...colTemplate, minWidth: `${dates.length * 112}px` } : colTemplate
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-panel">
+    <div className="flex min-h-0 flex-1 flex-col overflow-x-auto bg-panel">
       {/* 表头：星期 + 日期 */}
       <div className="relative flex border-b border-line">
-        <div className="w-14 shrink-0" />
-        <div className="grid flex-1" style={colTemplate}>
+        <div className="w-11 shrink-0 sm:w-14" />
+        <div className="grid flex-1" style={gridStyle}>
           {dates.map((d, di) => {
             const isToday = d === today
             return (
@@ -364,7 +373,7 @@ function TimeGrid(p: {
                       onClick={p.onPrev}
                       aria-label="查看上一页日程"
                       title="上一页"
-                      className="calendar-page-arrow"
+                      className={`calendar-page-arrow ${dates.length > 1 ? 'mobile-multi-day-arrow' : ''}`}
                     >
                       ‹
                     </button>
@@ -382,7 +391,7 @@ function TimeGrid(p: {
                       onClick={p.onNext}
                       aria-label="查看下一页日程"
                       title="下一页"
-                      className="calendar-page-arrow"
+                      className={`calendar-page-arrow ${dates.length > 1 ? 'mobile-multi-day-arrow' : ''}`}
                     >
                       ›
                     </button>
@@ -395,10 +404,10 @@ function TimeGrid(p: {
       </div>
       {/* 全天栏 */}
       <div className="flex border-b border-line">
-        <div className="flex w-14 shrink-0 items-start justify-center pt-1 text-xs text-muted">
+        <div className="flex w-11 shrink-0 items-start justify-center pt-1 text-xs text-muted sm:w-14">
           W{teachingWeekOf(calendar, dates[0]) ?? '–'}
         </div>
-        <div className="grid max-h-36 flex-1 overflow-y-auto" style={colTemplate}>
+        <div className="grid max-h-36 flex-1 overflow-y-auto" style={gridStyle}>
           {dates.map((d) => {
             const list = allDay.filter((e) => e.date === d).sort((a, b) => kindOrder(a) - kindOrder(b))
             return (
@@ -420,14 +429,14 @@ function TimeGrid(p: {
       {/* 时间轴 */}
       <div ref={scroller} className="relative min-h-0 flex-1 overflow-y-auto">
         <div className="flex" style={{ height: gridH }}>
-          <div className="relative w-14 shrink-0">
+          <div className="relative w-11 shrink-0 sm:w-14">
             {Array.from({ length: END_H - START_H }, (_, i) => (
               <div key={i} className="absolute right-2 -translate-y-2 text-sm font-bold text-muted" style={{ top: i * HOUR }}>
                 {i === 0 ? '' : START_H + i}
               </div>
             ))}
           </div>
-          <div ref={cols} className="relative grid flex-1" style={colTemplate}>
+          <div ref={cols} className="relative grid flex-1" style={gridStyle}>
             {dates.map((d, di) => {
               const isToday = d === today
               const dayEvents = timed.filter((e) => e.date === d && !(drag && drag.ev.id === e.id))
@@ -708,15 +717,16 @@ function Popover({ ev, x, y, onClose, onAdopt, onDismiss, onStatus }: {
     }
   }, [onClose])
 
-  const left = Math.min(x + 8, window.innerWidth - 340)
-  const top = Math.min(y + 8, window.innerHeight - 300)
+  const mobile = window.innerWidth < 640
+  const left = mobile ? 12 : Math.min(x + 8, window.innerWidth - 340)
+  const top = mobile ? Math.max(12, Math.min(y + 8, window.innerHeight - 420)) : Math.min(y + 8, window.innerHeight - 300)
   const c = ev.course
   const assessment = ev.kind === 'deadline' ? courses.find((k) => k.code === c?.code)?.assessments.find((a) => a.id === ev.id.split(':')[2]) : undefined
   const week = teachingWeekOf(calendar, ev.date)
   const row = c?.weekly.find((r) => r.week === week)
 
   return (
-    <div ref={ref} className="fixed z-50 w-80 rounded-lg border border-line bg-panel p-3 text-sm shadow-xl" style={{ left, top }}>
+    <div ref={ref} className="fixed z-50 max-h-[calc(100dvh-24px)] w-[calc(100vw-24px)] overflow-y-auto rounded-lg border border-line bg-panel p-3 text-sm shadow-xl sm:w-80" style={{ left, top }}>
       <div className="mb-1 flex items-start gap-2">
         <span className="mt-1.5 inline-block size-2.5 shrink-0 rounded-full" style={{ background: ev.color }} />
         <div className="font-bold">{ev.kind === 'obsidian' ? (ev.task?.localId ? '待办（工作台）' : 'Obsidian 待办') : ev.title}</div>
@@ -788,11 +798,11 @@ function MonthGrid({ dates, anchor, events, onPick }: { dates: string[]; anchor:
   const month = anchor.slice(0, 7)
   const today = useToday((s) => s.today)
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-panel">
-      <div className="grid grid-cols-7 border-b border-line text-center text-xs text-muted">
+    <div className="flex min-h-0 flex-1 flex-col overflow-x-auto bg-panel">
+      <div className="grid min-w-[630px] grid-cols-7 border-b border-line text-center text-xs text-muted sm:min-w-0">
         {[1, 2, 3, 4, 5, 6, 7].map((d) => <div key={d} className="py-1.5">{WEEKDAY_ZH[d]}</div>)}
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-6">
+      <div className="grid min-h-0 min-w-[630px] flex-1 grid-cols-7 grid-rows-6 sm:min-w-0">
         {dates.map((d) => {
           const list = events.filter((e) => e.date === d)
           const banners = list.filter((e) => e.kind === 'banner')

@@ -42,10 +42,11 @@ export default function App() {
 
   const today = useToday((s) => s.today)
   const week = teachingWeekOf(calendar, today)
+  const activeNav = NAV.find((n) => n.id === page)
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <nav className="flex w-44 shrink-0 flex-col border-r border-line bg-panel-2">
+    <div className="flex h-[100dvh] overflow-hidden md:flex-row">
+      <nav className="hidden w-44 shrink-0 flex-col border-r border-line bg-panel-2 md:flex">
         <div className="px-4 pt-4 pb-3">
           <div className="text-lg font-bold">STP 工作台</div>
           <div className="text-xs text-muted">{calendar.name}{week ? ` · 第 ${week} 周` : ''}</div>
@@ -73,14 +74,38 @@ export default function App() {
           </button>
         </div>
       </nav>
-      <main className="min-w-0 flex-1 overflow-y-auto">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-panel px-3 py-2 md:hidden">
+          <div className="min-w-0">
+            <div className="truncate text-base font-bold">STP 工作台</div>
+            <div className="truncate text-[0.7333rem] text-muted">{activeNav?.label}{week ? ` · 第 ${week} 周` : ''}</div>
+          </div>
+          <div className={`shrink-0 text-xs ${vaultStatus === 'ready' ? 'text-ok' : 'text-muted'}`}>
+            ● {vaultStatus === 'ready' ? '已同步' : '本机模式'}
+          </div>
+        </header>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">
         {page === 'dashboard' && <Dashboard />}
         {page === 'calendar' && <CalendarPage />}
         {page === 'courses' && <Courses />}
         {page === 'rules' && <Rules />}
         {page === 'export' && <Export />}
         {page === 'settings' && <Settings />}
-      </main>
+        </main>
+        <nav className="mobile-bottom-nav grid shrink-0 grid-cols-6 border-t border-line bg-panel md:hidden" aria-label="手机端主导航">
+          {NAV.map((n) => (
+            <button
+              key={n.id}
+              onClick={() => setPage(n.id)}
+              aria-current={page === n.id ? 'page' : undefined}
+              className={`flex min-w-0 flex-col items-center justify-center gap-0.5 px-0.5 py-1.5 text-[0.6667rem] ${page === n.id ? 'bg-accent-soft font-bold text-accent' : 'text-muted'}`}
+            >
+              <span className="text-base leading-none">{n.icon}</span>
+              <span className="max-w-full truncate">{n.label.replace('学习规则', '规则').replace('导出 Excel', '导出')}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
     </div>
   )
 }

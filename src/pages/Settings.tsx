@@ -18,7 +18,7 @@ export default function Settings() {
   }[vault.status]
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-5">
+    <div className="mx-auto max-w-3xl space-y-4 p-3 sm:p-5">
       <Card title="Obsidian 同步">
         <p className={`mb-3 text-sm ${vault.status === 'ready' ? 'text-ok' : 'text-muted'}`}>{statusText}</p>
         <div className="mb-4 flex flex-wrap gap-2">
@@ -26,7 +26,7 @@ export default function Settings() {
           {vault.status === 'needs-permission' && <Button onClick={vault.reauthorize}>授权读写</Button>}
           {vault.handle && <Button kind="danger" onClick={vault.disconnect}>断开</Button>}
         </div>
-        <div className="grid grid-cols-[8rem_1fr] items-center gap-2 text-sm">
+        <div className="grid grid-cols-1 items-center gap-2 text-sm sm:grid-cols-[8rem_1fr]">
           <span className="text-muted">每日笔记路径</span>
           <input className="field" value={obsidian.dailyPath} onChange={(e) => setObsidian({ dailyPath: e.target.value })} onBlur={() => vault.handle && vault.reauthorize()} />
           <span className="text-muted">时间线标题</span>

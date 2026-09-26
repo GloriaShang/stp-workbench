@@ -96,6 +96,7 @@ body {
   color: var(--text);
   font-family: var(--font-serif);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 input,
 select,
@@ -174,6 +175,26 @@ input[type='number']::-webkit-inner-spin-button {
 .calendar-page-arrow:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+@media (max-width: 639px) {
+  .mobile-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 18px color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+  .mobile-bottom-nav button[aria-current='page'] {
+    box-shadow: inset 0 3px 0 var(--accent);
+  }
+  .mobile-multi-day-arrow {
+    display: none;
+  }
+  .calendar-page-arrow {
+    width: 30px;
+    height: 30px;
+    font-size: 23px;
+  }
+  .course-choice[aria-pressed='true'] {
+    box-shadow: inset 0 -3px 0 var(--accent);
+  }
 }
 .field {
   background: var(--panel);

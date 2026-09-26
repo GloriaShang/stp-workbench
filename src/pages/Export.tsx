@@ -16,7 +16,7 @@ export default function Export() {
   const theme = themeOf(p)
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-4 p-5 lg:grid-cols-[22rem_1fr]">
+    <div className="mx-auto grid max-w-7xl gap-4 p-3 sm:p-5 lg:grid-cols-[22rem_1fr]">
       <div className="space-y-4">
         <Card title="语言">
           <Segmented<Lang> value={p.lang} onChange={(lang) => setP({ lang })} options={[{ v: 'zh', label: '中文' }, { v: 'en', label: 'English' }, { v: 'bi', label: '中英双语' }]} />

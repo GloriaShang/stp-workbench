@@ -17,9 +17,9 @@ export default function Courses() {
   const c = courses.find((x) => x.code === activeCourse) ?? courses[0]
 
   return (
-    <div className="flex h-full">
-      <aside className="w-52 shrink-0 space-y-1 overflow-y-auto border-r border-line bg-panel p-2">
-        <div className="px-2 py-1 text-xs text-muted">课程（{courses.length}/10）</div>
+    <div className="flex h-full flex-col sm:flex-row">
+      <aside className="flex w-full shrink-0 gap-1 overflow-x-auto border-b border-line bg-panel p-2 sm:block sm:w-52 sm:space-y-1 sm:overflow-y-auto sm:border-r sm:border-b-0">
+        <div className="hidden px-2 py-1 text-xs text-muted sm:block">课程（{courses.length}/10）</div>
         {courses.map((x) => {
           const n = courseIssues(calendar, x).filter((i) => i.severity !== 'info').length
           return (
@@ -28,7 +28,7 @@ export default function Courses() {
               type="button"
               aria-pressed={x.code === c?.code}
               onClick={() => set({ activeCourse: x.code })}
-              className="course-choice flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm"
+              className="course-choice flex min-w-28 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm sm:w-full sm:min-w-0"
             >
               <span className="size-2.5 shrink-0 rounded-full" style={{ background: x.color }} />
               <span className="min-w-0 flex-1">
@@ -39,7 +39,7 @@ export default function Courses() {
             </button>
           )
         })}
-        <Button className="mt-2 w-full justify-center" disabled={courses.length >= 10} onClick={() => setAdding(true)}>
+        <Button className="min-w-28 shrink-0 justify-center sm:mt-2 sm:w-full" disabled={courses.length >= 10} onClick={() => setAdding(true)}>
           ＋ 新增课程
         </Button>
       </aside>
@@ -55,7 +55,7 @@ function NewCourse({ onDone }: { onDone: () => void }) {
   const [f, setF] = useState({ code: '', short: '', en: '', zh: '' })
   const ok = f.code.trim() && f.short.trim() && !courses.some((c) => c.code === f.code.trim())
   return (
-    <div className="mx-auto max-w-xl p-6">
+    <div className="mx-auto max-w-xl p-3 sm:p-6">
       <Card title="新增课程">
         <p className="mb-3 text-sm text-muted">
           先填基本信息，建好后再逐项补周计划、评分构成，把 STP 原文件作为附件上传，方便对照。
@@ -98,7 +98,7 @@ function CourseEditor({ c }: { c: Course }) {
   const total = topLevel(c).reduce((s, a) => s + a.weight, 0)
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-5">
+    <div className="mx-auto max-w-6xl space-y-4 p-3 sm:p-5">
       <div className="flex flex-wrap items-center gap-3">
         <input type="color" className="h-8 w-8 cursor-pointer rounded border border-line bg-transparent" value={c.color} onChange={(e) => upd({ color: e.target.value })} title="课程颜色" />
         <input className="field w-28 text-lg font-bold" value={c.short} onChange={(e) => upd({ short: e.target.value })} title="简称" />
