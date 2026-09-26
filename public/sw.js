@@ -1,6 +1,6 @@
 // 离线缓存：安装成应用后，没网也能打开。
 // 页面本身：优先联网拿最新版，失败时用缓存；带 hash 的静态资源：缓存优先。
-const CACHE = 'stp-workbench-v4'
+const CACHE = 'stp-workbench-v5'
 
 // 安装时就把页面和它引用的脚本、样式、图标存好。
 // 第一次打开时页面还没被接管，下面的 fetch 拦截不到，不预存的话第一次离线打开会是空白页。
@@ -12,7 +12,7 @@ self.addEventListener('install', (e) => {
       const html = await res.clone().text()
       await cache.put('./', res)
       const refs = [...html.matchAll(/(?:src|href)="(\.\/[^"]+)"/g)].map((m) => m[1])
-      await cache.addAll([...new Set([...refs, './icon-lavender-192.png', './icon-lavender-512.png'])])
+      await cache.addAll([...new Set([...refs, './icon-study-calendar-192.png', './icon-study-calendar-512.png'])])
       await self.skipWaiting()
     })(),
   )
