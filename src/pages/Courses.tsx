@@ -25,8 +25,10 @@ export default function Courses() {
           return (
             <button
               key={x.code}
+              type="button"
+              aria-pressed={x.code === c?.code}
               onClick={() => set({ activeCourse: x.code })}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm ${x.code === c?.code ? 'bg-panel-2 font-bold' : 'hover:bg-panel-2'}`}
+              className="course-choice flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm"
             >
               <span className="size-2.5 shrink-0 rounded-full" style={{ background: x.color }} />
               <span className="min-w-0 flex-1">

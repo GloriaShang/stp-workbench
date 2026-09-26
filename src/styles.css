@@ -125,6 +125,32 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 @layer components {
+.course-choice {
+  border: 1px solid transparent;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+}
+.course-choice:hover {
+  border-color: var(--line);
+  background: var(--accent-soft);
+}
+.course-choice[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.course-choice:active {
+  transform: scale(0.98);
+}
+.course-choice:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .course-choice { transition: none; }
+  .course-choice:active { transform: none; }
+}
 .calendar-page-arrow {
   display: inline-flex;
   align-items: center;
