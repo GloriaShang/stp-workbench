@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Button, Card, Num, Segmented } from '../components/ui'
 import { todayISO } from '../lib/dates'
-import { backupJSON, useStore, type ThemeMode } from '../store'
+import { backupJSON, DEFAULT_FONT_SIZE, MIN_FONT_SIZE, MAX_FONT_SIZE, useStore, type ThemeMode } from '../store'
 import { useVault } from '../vault'
 
 export default function Settings() {
-  const { obsidian, setObsidian, themeMode, set, resetCourses, importBackup } = useStore()
+  const { obsidian, setObsidian, themeMode, fontSize, fontBold, set, resetCourses, importBackup } = useStore()
   const vault = useVault()
   const [msg, setMsg] = useState('')
 
@@ -48,11 +48,38 @@ export default function Settings() {
       </Card>
 
       <Card title="外观">
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           明暗
           <Segmented<ThemeMode> value={themeMode} onChange={(v) => set({ themeMode: v })} options={[{ v: 'system', label: '跟随系统' }, { v: 'light', label: '浅色' }, { v: 'dark', label: '深色' }]} />
         </div>
-        <p className="mt-2 text-xs text-muted">字体与 Obsidian 一致：英文 Times New Roman，中文宋体-简。</p>
+        <div className="mt-4 space-y-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3">
+            <label htmlFor="app-font-size">全局字号</label>
+            <input
+              id="app-font-size"
+              type="range"
+              min={MIN_FONT_SIZE}
+              max={MAX_FONT_SIZE}
+              step={1}
+              value={fontSize}
+              onChange={(e) => set({ fontSize: Number(e.target.value) })}
+              aria-valuetext={`${fontSize} 像素`}
+              aria-describedby="font-size-help"
+              className="min-w-32 max-w-64 flex-1 cursor-pointer accent-accent"
+            />
+            <output htmlFor="app-font-size" className="w-12 tabular-nums">{fontSize} px</output>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="inline-flex cursor-pointer items-center gap-2">
+              <input type="checkbox" checked={fontBold} onChange={(e) => set({ fontBold: e.target.checked })} className="accent-accent" />
+              全局粗体
+            </label>
+            <Button onClick={() => set({ fontSize: DEFAULT_FONT_SIZE, fontBold: false })}>恢复默认字号与字重</Button>
+          </div>
+          <p className="rounded-md border border-line px-3 py-2">字体预览：雅思与课程日程 · IELTS 2026 · 15:00–23:30</p>
+        </div>
+        <p id="font-size-help" className="mt-2 text-xs text-muted">拖动滑块即时调整整个工作台（12–22 px），设置自动保存。关闭粗体后恢复原有标题层级；不影响 Excel 导出字体。</p>
+        <p className="mt-1 text-xs text-muted">英文和数字 Times New Roman，中文宋体-简。</p>
       </Card>
 
       <Card title="数据与备份">

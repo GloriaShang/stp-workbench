@@ -88,7 +88,7 @@
 /* 放进 layer，确保 Tailwind 的工具类（如 text-xs）能覆盖这些默认样式 */
 @layer base {
 html {
-  font-size: 15px;
+  font-size: var(--app-font-size, 15px);
 }
 body {
   margin: 0;
@@ -117,6 +117,11 @@ input[type='number']::-webkit-inner-spin-button {
   scrollbar-color: var(--line) transparent;
 }
 
+}
+
+:root[data-text-bold='true'] #root,
+:root[data-text-bold='true'] #root :where(*) {
+  font-weight: 700;
 }
 
 @layer components {

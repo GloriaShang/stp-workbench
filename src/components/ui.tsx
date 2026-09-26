@@ -5,7 +5,7 @@ export function Card({ title, extra, children, className = '' }: { title?: React
     <section className={`rounded-lg border border-line bg-panel ${className}`}>
       {(title || extra) && (
         <header className="flex items-center justify-between gap-3 border-b border-line-soft px-4 py-2.5">
-          <h2 className="text-[15px] font-bold">{title}</h2>
+          <h2 className="text-base font-bold">{title}</h2>
           {extra}
         </header>
       )}

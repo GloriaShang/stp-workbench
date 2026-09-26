@@ -659,7 +659,7 @@ function QuickAdd({ start, onDone }: { start: number; onDone: (text: string) => 
   }
   return (
     <div className="absolute inset-x-1 z-30 rounded-md border border-accent bg-panel p-1 shadow-lg" style={{ top: px(start) }}>
-      <div className="mb-0.5 text-[11px] text-muted">
+      <div className="mb-0.5 text-[0.7333rem] text-muted">
         {hhmm(start)}–{hhmm(start + 30)} 新建待办（回车保存，Esc 取消）
       </div>
       <input
@@ -773,7 +773,7 @@ function Popover({ ev, x, y, onClose, onAdopt, onDismiss, onStatus }: {
             <Button onClick={async () => { await tasks.toggleTask(ev.task!); onClose() }}>{ev.done ? '标为未完成' : '完成'}</Button>
             <Button kind="danger" onClick={async () => { if (confirm('删除这条待办？')) { await tasks.removeTask(ev.task!); onClose() } }}>删除</Button>
           </div>
-          <div className="text-[11px] text-muted">
+          <div className="text-[0.7333rem] text-muted">
             {ev.task.localId ? '存在工作台里；连上 Obsidian 后会自动写进 Daily Matter' : `${ev.date}.md 第 ${ev.task.line + 1} 行`}
           </div>
         </div>
@@ -804,12 +804,12 @@ function MonthGrid({ dates, anchor, events, onPick }: { dates: string[]; anchor:
             <button key={d} onClick={() => onPick(d)} className={`flex min-h-0 flex-col gap-0.5 overflow-hidden border-b border-l border-line-soft p-1 text-left hover:bg-panel-2 ${d.slice(0, 7) !== month ? 'opacity-40' : ''}`}>
               <span className={`self-start rounded px-1.5 text-sm ${d === today ? 'bg-today text-white' : ''}`}>{fromISO(d).getDate()}</span>
               {banners.map((b) => (
-                <span key={b.id} className="truncate text-[11px]" style={{ color: b.bannerKind === 'holiday' ? 'var(--ok)' : b.bannerKind === 'exam' ? 'var(--danger)' : 'var(--muted)' }}>{b.title}</span>
+                <span key={b.id} className="truncate text-[0.7333rem]" style={{ color: b.bannerKind === 'holiday' ? 'var(--ok)' : b.bannerKind === 'exam' ? 'var(--danger)' : 'var(--muted)' }}>{b.title}</span>
               ))}
               {deadlines.map((e) => (
-                <span key={e.id} className={`truncate rounded border-l-2 px-1 text-[11px] ${e.done ? 'line-through opacity-50' : ''}`} style={{ borderColor: e.color, background: `color-mix(in srgb, ${e.color} 12%, transparent)` }}>{e.title}</span>
+                <span key={e.id} className={`truncate rounded border-l-2 px-1 text-[0.7333rem] ${e.done ? 'line-through opacity-50' : ''}`} style={{ borderColor: e.color, background: `color-mix(in srgb, ${e.color} 12%, transparent)` }}>{e.title}</span>
               ))}
-              <span className="mt-auto flex flex-wrap gap-x-2 text-[11px] text-muted">
+              <span className="mt-auto flex flex-wrap gap-x-2 text-[0.7333rem] text-muted">
                 {classes > 0 && <span>{classes} 节课</span>}
                 {obs.length > 0 && <span>待办 {obs.filter((o) => o.done).length}/{obs.length}</span>}
                 {sug > 0 && <span>建议 {sug}</span>}

@@ -24,7 +24,7 @@ const MODE_ICON: Record<ThemeMode, string> = { system: '◐', light: '☀', dark
 const MODE_LABEL: Record<ThemeMode, string> = { system: '跟随系统', light: '浅色', dark: '深色' }
 
 export default function App() {
-  const { page, setPage, themeMode, set, calendar } = useStore()
+  const { page, setPage, themeMode, fontSize, fontBold, set, calendar } = useStore()
   const vaultStatus = useVault((s) => s.status)
 
   useEffect(() => {
@@ -35,6 +35,10 @@ export default function App() {
     if (themeMode === 'system') root.removeAttribute('data-theme')
     else root.setAttribute('data-theme', themeMode)
   }, [themeMode])
+  useEffect(() => {
+    document.documentElement.style.setProperty('--app-font-size', `${fontSize}px`)
+    document.documentElement.dataset.textBold = String(fontBold)
+  }, [fontSize, fontBold])
 
   const today = useToday((s) => s.today)
   const week = teachingWeekOf(calendar, today)
@@ -51,7 +55,7 @@ export default function App() {
             <button
               key={n.id}
               onClick={() => setPage(n.id)}
-              className={`flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-left text-[15px] ${page === n.id ? 'bg-accent-soft font-bold text-accent' : 'hover:bg-accent-soft'}`}
+              className={`flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-left text-base ${page === n.id ? 'bg-accent-soft font-bold text-accent' : 'hover:bg-accent-soft'}`}
             >
               <span className="w-4 text-center opacity-70">{n.icon}</span>
               {n.label}

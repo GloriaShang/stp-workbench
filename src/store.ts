@@ -11,6 +11,13 @@ export type ThemeMode = 'system' | 'light' | 'dark'
 export type CalView = 'day' | '3day' | 'week' | 'month'
 export type Page = 'dashboard' | 'calendar' | 'courses' | 'export' | 'rules' | 'settings'
 
+export const DEFAULT_FONT_SIZE = 15
+export const MIN_FONT_SIZE = 12
+export const MAX_FONT_SIZE = 22
+const validFontSize = (value: unknown) => typeof value === 'number' && Number.isFinite(value)
+  ? Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, Math.round(value)))
+  : DEFAULT_FONT_SIZE
+
 /** 没连 Obsidian 时，在日历里新建的待办先存在这里；连上后自动搬进 Daily Matter */
 export interface LocalTask {
   id: string
@@ -39,6 +46,8 @@ interface State {
   dismissed: string[]
   localTasks: LocalTask[]
   themeMode: ThemeMode
+  fontSize: number
+  fontBold: boolean
   view: CalView
   layers: Layers
   page: Page
@@ -58,7 +67,7 @@ interface State {
   addLocalTasks: (items: Omit<LocalTask, 'id' | 'done'>[]) => void
   updateLocalTask: (id: string, patch: Partial<LocalTask>) => void
   removeLocalTasks: (ids: string[]) => void
-  set: (p: Partial<Pick<State, 'themeMode' | 'view' | 'layers' | 'activeCourse'>>) => void
+  set: (p: Partial<Pick<State, 'themeMode' | 'fontSize' | 'fontBold' | 'view' | 'layers' | 'activeCourse'>>) => void
   resetCourses: () => void
   importBackup: (json: string) => void
 }
@@ -75,6 +84,8 @@ export const useStore = create<State>()(
       dismissed: [],
       localTasks: [],
       themeMode: 'light',
+      fontSize: DEFAULT_FONT_SIZE,
+      fontBold: false,
       view: 'week',
       layers: { classes: true, deadlines: true, obsidian: true, suggestions: true },
       page: 'dashboard',
@@ -119,6 +130,8 @@ export const useStore = create<State>()(
           adopted: d.adopted ?? [],
           dismissed: d.dismissed ?? [],
           localTasks: d.localTasks ?? [],
+          ...(d.fontSize !== undefined ? { fontSize: validFontSize(d.fontSize) } : {}),
+          ...(typeof d.fontBold === 'boolean' ? { fontBold: d.fontBold } : {}),
         })
       },
     }),
@@ -138,7 +151,7 @@ export const useStore = create<State>()(
           const d = DEFAULT_RULES[k]
           if (d && typeof d === 'object' && !Array.isArray(d)) (rules as unknown as Record<string, unknown>)[k] = { ...d, ...(p.rules?.[k] as object) }
         }
-        return { ...current, ...p, rules, exportPrefs: { ...DEFAULT_EXPORT, ...p.exportPrefs }, obsidian: { ...DEFAULT_OBSIDIAN, ...p.obsidian } }
+        return { ...current, ...p, fontSize: validFontSize(p.fontSize), fontBold: p.fontBold === true, rules, exportPrefs: { ...DEFAULT_EXPORT, ...p.exportPrefs }, obsidian: { ...DEFAULT_OBSIDIAN, ...p.obsidian } }
       },
       // 校历由代码内置，不存进 localStorage，方便以后修正校历时自动生效
       partialize: ({ calendar: _c, page: _p, ...rest }) => rest,
@@ -172,7 +185,7 @@ function migrateV2(courses: Course[]): Course[] {
 export const backupJSON = () => {
   const s = useStore.getState()
   return JSON.stringify(
-    { version: 2, savedAt: Date.now(), exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed, localTasks: s.localTasks },
+    { version: 2, savedAt: Date.now(), exportedAt: new Date().toISOString(), courses: s.courses, exportPrefs: s.exportPrefs, rules: s.rules, obsidian: s.obsidian, adopted: s.adopted, dismissed: s.dismissed, localTasks: s.localTasks, fontSize: s.fontSize, fontBold: s.fontBold },
     null,
     2,
   )
